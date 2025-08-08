@@ -77,6 +77,9 @@ Thumbs.db
 !src/
 !src_dash/
 !test/
+!test/
+!test/*
+!test/**/
 tools/
 tools/*
 tools/**
