@@ -151,3 +151,6 @@ scripts/**
 .vscode/
 .vscode/*
 .vscode/**
+.kiro/
+.kiro/*
+.kiro/**
