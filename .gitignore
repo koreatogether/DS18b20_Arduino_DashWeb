@@ -1,15 +1,138 @@
-﻿# Build artifacts
-.pio/
-build*/
+# 컴파일 로그 무시
+logs/comfile/
+logs/comfile/*
+logs/comfile/**
+# 로그 및 감지 결과 무시
 logs/
-# Python env
-.venv/
+logs/*
+logs/**
+.pio
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/extensions.json
+.vscode/launch.json
+.vscode/ipch
+# PlatformIO
+.pio/
+.vscode/
+# .github/workflows/main.yml만 추적 예외로 허용
+.github/
+.github/*
+.github/**
+!.github/workflows/main.yml
+# build/ 폴더는 빌드 산출물 보존을 위해 무시하지 않음
+# build/
+libdeps/
+*.pyc
 __pycache__/
-.pytest_cache/
+*.elf
+*.bin
+*.hex
+# DS18B20_Embedded_ApplicationV2 .gitignore (정리본)
+# 중복 항목 제거 및 명확한 분류
+# Python 가상환경 무시(25.07.31 아침에 등록 )
+.venv/
+
+# Git 내부 객체 및 테스트/샘플/민감정보 경로 무시
+.git/objects/
+.git/objects/**
+test/fixtures/
+test/fixtures/**
+.venv/Lib/site-packages/git/test/fixtures/
+.venv/Lib/site-packages/git/test/fixtures/**
+
 # OS/Editor
 .DS_Store
 Thumbs.db
-.vscode/
 
-# Node (if any)
-node_modules/
+# 기타
+*.json
+*.log
+*.exe
+*.sh
+*.ps1
+*.bat
+*.cmd
+
+
+
+
+# docs, include, lib 폴더 및 하위 전체 무시
+include/
+include/*
+include/**
+lib/
+lib/*
+lib/**
+# L
+
+# test 폴더 및 하위 전체 무시
+test/
+test/*
+test/**
+
+# 저장소의 모든 파일 무시, 단 src/만 추적
+
+/*
+!.gitignore
+!src/
+!src_dash/
+!docs_dash/
+!src_processing/
+!README.md
+!.kiro/
+!.kiro/specs/
+!.kiro/specs/arduino-processing-sensor-communication/
+
+
+#Ignore insiders AI rules
+.github\copilot-instructions.md
+
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch/
+
+# Compilation
+*.o
+*.obj
+*.exe
+*.bin
+*.hex
+*.elf
+compile_commands.json
+
+# Logs and temporary files
+logs/
+*.log
+*.tmp
+*.bak
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+secrets.h
+config_private.h
+
+# Build artifacts
+build/
+dist/
