@@ -61,14 +61,13 @@ Thumbs.db
 # Track project sources, docs, and tools (stop blanket ignoring)
 # Keep only caches/build artifacts/logs ignored below.
 
-# Allow these top-level items to be tracked
+# Allow only README.md and platformio.ini to be tracked in root
 !.gitignore
 !README.md
-!README_english.md
 !platformio.ini
-!requirements.txt
-!dash_requirements.txt
-!Doxyfile
+# Ignore all other files in root
+/*
+# But do not ignore these folders
 !scripts/
 !include/
 !lib/
