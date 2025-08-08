@@ -1,6 +1,0 @@
-dash
-pandas
-plotly
-pytest
-pyserial
-jsonschema
