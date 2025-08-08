@@ -57,32 +57,31 @@ Thumbs.db
 
 
 
-# docs, include, lib 폴더 및 하위 전체 무시
-include/
-include/*
-include/**
-lib/
-lib/*
-lib/**
-# L
+### Relaxed tracking rules for migrated repo
+# Track project sources, docs, and tools (stop blanket ignoring)
+# Keep only caches/build artifacts/logs ignored below.
 
-# test 폴더 및 하위 전체 무시
-test/
-test/*
-test/**
-
-# 저장소의 모든 파일 무시, 단 src/만 추적
-
-/*
+# Allow these top-level items to be tracked
 !.gitignore
+!README.md
+!README_english.md
+!platformio.ini
+!requirements.txt
+!dash_requirements.txt
+!Doxyfile
+!scripts/
+!include/
+!lib/
+!docs/
+!docs_arduino/
+!docs_dash/
 !src/
 !src_dash/
-!docs_dash/
-!src_processing/
-!README.md
+!test/
+!tools/
+!.github/
+!.vscode/
 !.kiro/
-!.kiro/specs/
-!.kiro/specs/arduino-processing-sensor-communication/
 
 
 #Ignore insiders AI rules
