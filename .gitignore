@@ -1,0 +1,15 @@
+﻿# Build artifacts
+.pio/
+build*/
+logs/
+# Python env
+.venv/
+__pycache__/
+.pytest_cache/
+# OS/Editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Node (if any)
+node_modules/
