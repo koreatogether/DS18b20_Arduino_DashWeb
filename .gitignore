@@ -135,3 +135,9 @@ config_private.h
 # Build artifacts
 build/
 dist/
+
+# Tool-specific logs and temp (avoid exposing local paths/serial info)
+tools/realTimeTest/logs/
+tools/realTimeTest/logs/**
+tools/realTimeTest/temp/
+tools/realTimeTest/temp/**
