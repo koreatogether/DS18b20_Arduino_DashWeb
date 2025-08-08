@@ -23,34 +23,29 @@ DS18B20 Embedded Application의 코드 품질을 자동으로 모니터링하고
 ## 🚀 사용법
 
 ### 기본 품질 메트릭 실행
-```bash
-# Python 스크립트 직접 실행
-python tools/quality_metrics/code_metrics.py
+```cmd
+:: Python 스크립트 직접 실행 (Windows cmd)
+python tools\quality_metrics\code_metrics.py
 
-# 결과 파일 위치:
-# - logs/quality/metrics_YYYYMMDD_HHMMSS.json
-# - logs/quality/quality_report_YYYYMMDD_HHMMSS.md
+:: 결과 파일 위치:
+:: - logs\quality\metrics_YYYYMMDD_HHMMSS.json
+:: - logs\quality\quality_report_YYYYMMDD_HHMMSS.md
 ```
 
 ### 트렌드 분석 실행
-```bash
-# 과거 데이터와 비교하여 트렌드 분석
-python tools/quality_metrics/trend_analyzer.py
-
+```cmd
+:: 과거 데이터와 비교하여 트렌드 분석
+python tools\quality_metrics\trend_analyzer.py
+```
 
 ### 자동화된 전체 품질 모니터링
 
+```powershell
 # 분석만 실행 (빌드/테스트 건너뛰기)
 powershell -ExecutionPolicy Bypass -File tools/quality_metrics/monitor_quality.ps1 -SkipBuild -SkipTest
 
-# 상세 출력 포함
-## DS18B20_Embedded_ApplicationV2 Quality Metrics
-```
-
-#### Linux/macOS (Bash)
 # 전체 프로세스 실행
-
-# Git Bash에서도 사용 가능
+powershell -ExecutionPolicy Bypass -File tools/quality_metrics/monitor_quality.ps1
 ```
 ## 📈 품질 점수 기준
 

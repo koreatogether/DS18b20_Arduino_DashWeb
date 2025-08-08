@@ -24,8 +24,8 @@ class CodeMetricsCollector:
         return None, None
 
     def _get_test_score(self):
-        if "test_metrics" in self.metrics:
-            return self.metrics["test_metrics"]["test_success_rate"], 0.25
+        if "test_metrics" in self.metrics and self.metrics["test_metrics"]:
+            return self.metrics["test_metrics"].get("test_success_rate", 0.0), 0.25
         return None, None
 
     def _get_build_score(self):
@@ -66,6 +66,7 @@ class CodeMetricsCollector:
             "code_metrics": {},
             "architecture_metrics": {},
             "build_metrics": {},
+            # "test_metrics": {},  # set only when available
             "quality_score": 0.0
         }
 
@@ -267,9 +268,37 @@ class CodeMetricsCollector:
             "score": score
         }
 
-    # def collect_test_metrics(self) -> Dict[str, Any]:
-    #     """테스트 메트릭 수집 (removed)"""
-    #     return {}
+    def collect_test_metrics(self) -> Dict[str, Any]:
+        """테스트 메트릭 수집: PlatformIO native 테스트 로그 파싱 (있을 때만)."""
+        test_log_path = self.project_root / "test" / "logs" / "test_results_clean.txt"
+        if not test_log_path.exists():
+            return {}
+        content = self._decode_test_log(test_log_path)
+        if content is None:
+            return {}
+        metrics: Dict[str, Any] = {
+            "test_files": 0,
+            "test_cases": 0,
+            "passed_tests": 0,
+            "failed_tests": 0,
+            "test_success_rate": 0.0,
+            "execution_time": 0.0,
+            "coverage_estimate": 0.0,
+        }
+        # 기본 파서들
+        parsed = self._parse_unity_test_results(content, metrics)
+        if not parsed:
+            parsed = self._parse_alternative_test_results(content, metrics)
+        self._parse_test_execution_time(content, metrics)
+        # test_files 대략 계산 (행에 test/ 경로 등장 수 등 간단 추정)
+        metrics["test_files"] = len([ln for ln in content.splitlines() if "test/" in ln or ".cpp" in ln and "[TEST]" in ln])
+        # coverage 추정치: 성공률을 간단히 반영
+        if metrics["test_cases"] > 0:
+            metrics["coverage_estimate"] = min(100.0, metrics["test_success_rate"])  # 보수적 추정
+        # 테스트 데이터 검증
+        if metrics["test_cases"] == 0 and metrics["passed_tests"] == 0 and metrics["failed_tests"] == 0:
+            return {}
+        return metrics
 
     def _decode_test_log(self, test_log_path):
         for encoding in ['utf-16', 'utf-8', 'latin-1', 'cp1252']:
@@ -446,13 +475,18 @@ class CodeMetricsCollector:
         self.metrics["code_metrics"] = self.collect_code_metrics()
         self.metrics["architecture_metrics"] = self.collect_architecture_metrics()
         self.metrics["build_metrics"] = self.collect_build_metrics()
+        test_metrics = self.collect_test_metrics()
+        if test_metrics:
+            self.metrics["test_metrics"] = test_metrics
         self.metrics["quality_score"] = self.calculate_quality_score()
         report = f"""
 # DS18B20 Embedded Application - Code Quality Report
 Generated: {self.metrics['timestamp']}
 \n## 📊 Overall Quality Score: {self.metrics['quality_score']:.1f}/100\n"""
         report += self._report_code_metrics()
-    # report += self._report_architecture_metrics()  # skipped due to missing method
+        if "test_metrics" in self.metrics:
+            report += self._report_test_metrics()
+        # report += self._report_architecture_metrics()  # skipped due to missing method
         report += self._report_build_metrics()
         report += "\n## 📋 Recommendations\n\n"
         if self.metrics['quality_score'] < 70:

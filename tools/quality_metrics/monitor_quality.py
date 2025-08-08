@@ -62,22 +62,51 @@ def main():
         print("❌ Build failed")
         sys.exit(1)
 
-    # 2. 테스트 실행 및 로그 저장 (tee)
+    # 2. 테스트 실행 및 로그 저장 (tee) — only if [env:native] exists
     print("")
     print("🧪 Running unit tests...")
-    test_log = project_root / 'test/logs/test_results_clean.txt'
-    ret = run_and_tee('pio test -e native -v', test_log)
-    if ret == 0:
-        print("✅ Tests completed")
+    has_native = False
+    ini_path = project_root / 'platformio.ini'
+    if ini_path.exists():
+        try:
+            with open(ini_path, 'r', encoding='utf-8') as f:
+                has_native = '[env:native]' in f.read()
+        except Exception:
+            has_native = False
+    if has_native:
+        test_log = project_root / 'test/logs/test_results_clean.txt'
+        ret = run_and_tee('pio test -e native -v', test_log)
+        if ret == 0:
+            print("✅ Tests completed")
+        else:
+            print("❌ Tests failed")
+            sys.exit(1)
     else:
-        print("❌ Tests failed")
-        sys.exit(1)
+        print("ℹ️ No [env:native] in platformio.ini. Skipping tests.")
 
     print("")
     print("📊 Step 2: Quality Metrics Analysis")
     print("==================================")
 
-    # 3. 품질 메트릭 실행
+    # 3-a. 민감정보(시크릿) 스캔
+    print("🔒 Running secret scan (TruffleHog)...")
+    secret_scan = project_root / 'tools' / 'trufflehog_gitscan.py'
+    if secret_scan.exists():
+        run_cmd(f'python "{secret_scan}"', check=False)
+    else:
+        print("ℹ️ Secret scan script not found, skipping.")
+
+    # 3-b. C/C++ robust 정적 분석 (cppcheck via PlatformIO)
+    print("🧰 Running C/C++ static analysis (cppcheck)...")
+    quality_dir = project_root / 'logs' / 'quality'
+    cppcheck_log = quality_dir / 'cppcheck_robust_results.txt'
+    robust_script = project_root / 'tools' / 'robust_cppcheck.py'
+    if robust_script.exists():
+        run_cmd(f'python "{robust_script}"', check=False)
+    else:
+        run_and_tee('pio check --flags="--enable=all --inconclusive --force --std=c++17 --exclude=.pio/libdeps --exclude=lib"', cppcheck_log, check=False)
+
+    # 3-c. 품질 메트릭 실행
     print("📈 Running quality metrics analysis...")
     run_cmd('python tools/quality_metrics/code_metrics.py')
 

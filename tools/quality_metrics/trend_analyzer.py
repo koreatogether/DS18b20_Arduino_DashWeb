@@ -34,7 +34,9 @@ class QualityTrendAnalyzer:
         return metrics_history
     
     def _compare_metrics(self, latest, previous, trends):
-        categories = ["code_metrics", "architecture_metrics", "build_metrics"]  # test_metrics removed
+        categories = ["code_metrics", "architecture_metrics", "build_metrics"]
+        if "test_metrics" in latest and latest["test_metrics"]:
+            categories.append("test_metrics")
         for category in categories:
             if category in latest and category in previous:
                 trends["metrics_comparison"][category] = {

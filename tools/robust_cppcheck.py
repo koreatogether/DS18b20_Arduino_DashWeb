@@ -9,7 +9,7 @@ import os
 import subprocess
 from pathlib import Path
 
-def run_and_tee(cmd, logfile):
+def run_and_tee(cmd, logfile, check=True):
     print(f"$ {cmd}")
     with open(logfile, 'w', encoding='utf-8') as f:
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, universal_newlines=True)
@@ -17,7 +17,10 @@ def run_and_tee(cmd, logfile):
             print(line, end='')
             f.write(line)
         process.stdout.close()
-        return process.wait()
+        rc = process.wait()
+        if check and rc != 0:
+            raise SystemExit(rc)
+        return rc
 
 def main():
     workdir = Path(__file__).parent.parent.resolve()
@@ -36,7 +39,7 @@ def main():
     # 2. cppcheck 강력 옵션으로 정적 분석 (외부 라이브러리 제외)
     print("[2] cppcheck robust 검사...")
     cppcheck_cmd = 'pio check --flags="--enable=all --inconclusive --force --std=c++17 --exclude=.pio/libdeps --exclude=lib"'
-    run_and_tee(cppcheck_cmd, logfile)
+    ret = run_and_tee(cppcheck_cmd, logfile, check=False)
 
     # 3. 경고/에러 요약
     warn_count = 0
@@ -47,7 +50,10 @@ def main():
                 warn_count += 1
             if '[error]' in line:
                 err_count += 1
-    if warn_count == 0 and err_count == 0:
+    if ret != 0:
+        print("❌ cppcheck 실행 실패. logs/quality/cppcheck_robust_results.txt를 확인하세요.")
+        exit(1)
+    elif warn_count == 0 and err_count == 0:
         print("✅ cppcheck: 런타임 robust(잠재적 크래시/버그) 문제 없음!")
     else:
         print(f"⚠️ cppcheck: 경고 {warn_count}건, 에러 {err_count}건 발견. logs/quality/cppcheck_robust_results.txt 확인!")
