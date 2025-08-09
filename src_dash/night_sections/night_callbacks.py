@@ -1,6 +1,6 @@
 """Night Mode (v2) 콜백 함수들"""
 import dash
-from dash import Input, Output, State, dcc
+from dash import Input, Output, State, dcc, html
 import plotly.graph_objects as go
 import pandas as pd
 
@@ -28,6 +28,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
             arduino.port = selected
             if arduino.connect():
                 if arduino.start_reading():
+                    print(f"✅ Night 모드 Arduino 연결 성공: {selected}")
                     return f"✅ 연결됨: {selected}"
             return "❌ 연결 실패"
         except Exception as e:
@@ -39,7 +40,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
     )
     def reconnect_arduino_v2(n_clicks):
         if n_clicks > 0:
-            print("🔄 수동 재연결 시도...")
+            print("🔄 Night 모드 수동 재연결 시도...")
             try:
                 arduino.disconnect()
                 import time
@@ -49,7 +50,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
             try:
                 if arduino.connect():
                     if arduino.start_reading():
-                        print("✅ 수동 재연결 성공!")
+                        print("✅ Night 모드 수동 재연결 성공!")
                         return "✅ 재연결 성공"
                     else:
                         arduino.disconnect()
@@ -86,6 +87,25 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
             return "❌ 요청 실패"
         return "통계 요청"
 
+    # V2 시스템 로그 업데이트 콜백
+    @app.callback(
+        Output('system-log-v2', 'children'),
+        Input('interval-component', 'n_intervals'),
+        State('ui-version-store', 'data'),
+        prevent_initial_call=True
+    )
+    def update_system_log_v2(_n, ui_version):
+        if ui_version != 'v2':
+            return dash.no_update
+        _, _, _current_temps, _latest_data, system_messages = _snapshot()
+        log_entries = []
+        for msg in system_messages:
+            ts = msg['timestamp'].strftime('%H:%M:%S')
+            level_icons = {"info":"ℹ️","warning":"⚠️","error":"❌"}
+            icon = level_icons.get(msg['level'],'📝')
+            log_entries.append(html.Div(f"[{ts}] {icon} {msg['message']}", style={'color': 'white', 'marginBottom': '2px'}))
+        return log_entries
+
     # V2 포트 드롭다운 콜백
     @app.callback(
         [Output('port-dropdown-v2', 'options'),
@@ -98,7 +118,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
         if ui_version != 'v2':
             return dash.no_update, dash.no_update
         try:
-            from port_manager import find_arduino_port
+            from core.port_manager import find_arduino_port
             try:
                 from serial.tools import list_ports
             except Exception:

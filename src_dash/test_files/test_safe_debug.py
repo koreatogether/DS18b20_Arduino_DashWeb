@@ -4,7 +4,12 @@
 import signal
 import sys
 import time
-from serial_json_communication import ArduinoJSONSerial
+import sys
+import os
+# 상위 디렉토리의 모듈을 import하기 위해 경로 추가
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from core.serial_json_communication import ArduinoJSONSerial
 
 # 전역 변수
 arduino = None

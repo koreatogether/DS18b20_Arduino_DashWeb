@@ -1,8 +1,13 @@
 """
 Arduino 데이터 수신 및 저장 상태 디버그
 """
+import sys
+import os
+# 상위 디렉토리의 모듈을 import하기 위해 경로 추가
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import time
-from serial_json_communication import ArduinoJSONSerial
+from core.serial_json_communication import ArduinoJSONSerial
 
 def debug_arduino_data():
     print("🔍 Arduino 데이터 디버그 시작")

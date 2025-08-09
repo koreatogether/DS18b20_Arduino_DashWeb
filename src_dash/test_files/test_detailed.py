@@ -4,10 +4,15 @@ Arduino 명령 응답 상세 테스트
 - JSON 통신 테스트
 - 센서 제어 명령 테스트
 """
+import sys
+import os
+# 상위 디렉토리의 모듈을 import하기 위해 경로 추가
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import serial
 import time
 import json
-from port_manager import find_arduino_port
+from core.port_manager import find_arduino_port
 
 
 def test_specific_commands():

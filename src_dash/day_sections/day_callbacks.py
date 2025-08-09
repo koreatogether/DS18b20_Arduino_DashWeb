@@ -92,7 +92,7 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
     )
     def refresh_port_options(_n, current_value_1, current_value_2):
         try:
-            from port_manager import find_arduino_port
+            from core.port_manager import find_arduino_port
             try:
                 from serial.tools import list_ports
             except Exception:

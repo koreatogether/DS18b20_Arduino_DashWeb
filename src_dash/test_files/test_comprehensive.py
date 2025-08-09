@@ -5,10 +5,15 @@
 - 센서 데이터 수신 확인
 - 명령 응답 테스트
 """
+import sys
+import os
+# 상위 디렉토리의 모듈을 import하기 위해 경로 추가
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import serial
 import time
 import json
-from port_manager import find_arduino_port, list_available_ports
+from core.port_manager import find_arduino_port, list_available_ports
 
 
 def test_serial_communication(port_name, duration=10):

@@ -18,7 +18,7 @@ class ArduinoSerial:
     def __init__(self, port=None, baudrate=115200):
         if port is None:
             try:
-                from port_manager import find_arduino_port
+                from .port_manager import find_arduino_port
                 port = find_arduino_port() or 'COM4'
             except ImportError:
                 port = 'COM4'
@@ -356,7 +356,7 @@ if __name__ == "__main__":
     print("🧪 새로운 Arduino 시리얼 통신 테스트")
     
     try:
-        from port_manager import find_arduino_port
+        from .port_manager import find_arduino_port
         detected_port = find_arduino_port()
     except ImportError:
         detected_port = None
