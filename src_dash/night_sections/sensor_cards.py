@@ -1,4 +1,4 @@
-"""센서 기능 버튼 섹션 - ID 변경, 상/하한 온도 임계값 변경, 측정주기 변경 버튼들 24개"""
+"""센서 카드 컴포넌트 - 온도 표시, 기능 버튼, 미니 그래프, 도구를 통합한 센서 카드들"""
 from dash import html, dcc
 
 
@@ -50,8 +50,8 @@ def create_sensor_function_buttons():
 
 def create_sensor_cards_with_buttons(TH_DEFAULT=55.0, TL_DEFAULT=-25.0):
     """온도 카드와 기능 버튼을 결합한 완전한 센서 카드들 - 원하는 구조로 복구"""
-    from .individual_graphs_section import get_mini_graph_placeholder
-    from .individual_tools_section import create_individual_tools
+    from .mini_graphs import get_mini_graph_placeholder
+    from .sensor_tools import create_individual_tools
 
     sensor_cards = []
     tool_sections = create_individual_tools()

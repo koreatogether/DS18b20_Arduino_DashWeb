@@ -1,9 +1,9 @@
 """Night Mode (v2) 레이아웃 - 섹션별로 분리된 구조"""
 from dash import html
-from .sensor_function_buttons_section import create_sensor_cards_with_buttons
-from .combined_graph_section import create_combined_graph_section
-from .control_log_section import create_control_log_section
-from .modal_section import create_interval_modal, create_confirm_dialog
+from .sensor_cards import create_sensor_cards_with_buttons
+from .main_graph import create_combined_graph_section
+from .controls import create_control_log_section
+from .modals import create_interval_modal, create_confirm_dialog
 from .night_callbacks import register_night_callbacks
 
 

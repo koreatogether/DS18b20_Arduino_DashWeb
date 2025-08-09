@@ -1,4 +1,4 @@
-"""개별 그래프 섹션 - 개별 그래프 8개"""
+"""미니 그래프 컴포넌트 - 각 센서별 소형 그래프들"""
 from dash import dcc
 import plotly.graph_objects as go
 
