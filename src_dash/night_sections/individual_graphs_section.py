@@ -40,7 +40,7 @@ def get_mini_graph_placeholder():
         template='plotly_dark',
         plot_bgcolor='rgba(0,0,0,0)', 
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=10, r=10, t=10, b=10),
+        margin=dict(l=10, r=80, t=10, b=10),
         xaxis=dict(showgrid=False, visible=False),
         yaxis=dict(showgrid=False, visible=False),
         height=160,

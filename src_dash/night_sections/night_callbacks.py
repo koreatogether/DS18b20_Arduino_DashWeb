@@ -189,17 +189,32 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
                         ticklabelposition="outside bottom",
                         ticklabelstandoff=10
                     )
-                    fig.update_yaxes(showgrid=False, tickfont=dict(color='#aaa'), nticks=3)
+                    # y축 왼쪽 숫자(50, 0) 제거
+                    fig.update_yaxes(showgrid=False, tickfont=dict(color='#aaa'), nticks=3, showticklabels=False)
+                    # 오른쪽 끝 x값
+                    x_max = x.iloc[-1] if len(x) > 0 else None
+                    # 최신 온도값을 별도 HTML 요소에 표시하기 위해 저장
+                    latest_temp = y.iloc[-1] if len(y) else None
+                    # 임계선: TH(위), TL(아래) 점선 / 0은 실선
+                    # Zero line (solid)
                     try:
-                        fig.add_hline(y=TH_DEFAULT, line_dash='dash', line_color='red')
-                        fig.add_hline(y=TL_DEFAULT, line_dash='dash', line_color='blue')
+                        fig.add_hline(y=0, line_dash='solid', line_color='#888')
                     except Exception:
                         pass
+                    # TH & TL lines (dashed) - 라벨 제거하고 선만 표시
+                    for val, color in [
+                        (TH_DEFAULT, 'red'),
+                        (TL_DEFAULT, 'blue')
+                    ]:
+                        try:
+                            fig.add_hline(y=val, line_dash='dash', line_color=color)
+                        except Exception:
+                            pass
                 else:
                     fig.add_annotation(text='데이터 없음', showarrow=False, font=dict(color='white', size=10))
                 fig.update_layout(
                     template='plotly_dark',
-                    margin=dict(l=4, r=4, t=16, b=14),
+                    margin=dict(l=4, r=10, t=16, b=14),
                     height=170,
                     xaxis=dict(title=None),
                     yaxis=dict(title=None),
@@ -214,10 +229,39 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
             for sid in range(1,9):
                 fig = go.Figure()
                 fig.add_annotation(text='데이터 없음', showarrow=False, font=dict(color='white', size=10))
-                fig.update_layout(template='plotly_dark', margin=dict(l=4, r=4, t=16, b=14), height=170,
+                fig.update_layout(template='plotly_dark', margin=dict(l=4, r=10, t=16, b=14), height=170,
                                   plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
                 figures.append(fig)
         return figures
+
+    # 별도 온도 표시 업데이트 콜백
+    @app.callback(
+        [Output(f'sensor-{i}-current-temp', 'children') for i in range(1,9)],
+        Input('interval-component', 'n_intervals'),
+        State('ui-version-store', 'data'),
+        prevent_initial_call=True
+    )
+    def update_v2_temp_displays(_n, ui_version):
+        if ui_version != 'v2':
+            return [dash.no_update]*8
+        _, _, current_temps, latest_data, _msgs = _snapshot()
+        temp_displays = []
+        for sid in range(1,9):
+            if latest_data:
+                try:
+                    df = pd.DataFrame(latest_data)
+                    df['sensor_id'] = df['sensor_id'].astype(int)
+                    sub = df[df['sensor_id']==sid]
+                    if not sub.empty:
+                        latest_temp = sub['temperature'].iloc[-1]
+                        temp_displays.append(f"{latest_temp:.1f}°C")
+                    else:
+                        temp_displays.append("--°C")
+                except Exception:
+                    temp_displays.append("--°C")
+            else:
+                temp_displays.append("--°C")
+        return temp_displays
 
     # 모달 관련 콜백들
     def _format_interval(ms: int) -> str:

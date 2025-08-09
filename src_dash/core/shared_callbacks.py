@@ -127,9 +127,18 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
         prevent_initial_call=True
     )
     def update_combined_graph(_n, selected_sensor_lines, ui_version):
-        # 빈 선택이면 전체 센서 표시 (전체 그래프 역할 유지)
+        # 선택된 센서가 없으면 빈 그래프 반환 (임계선/센서라인 모두 제거)
         if not isinstance(selected_sensor_lines, list) or len(selected_sensor_lines) == 0:
-            selected_sensor_lines = [i for i in range(1,9)]
+            empty_fig = go.Figure()
+            empty_fig.update_layout(
+                title='전체 센서 실시간 온도 (센서 선택 없음)',
+                template='plotly_dark' if ui_version=='v2' else 'plotly_white',
+                height=560 if ui_version=='v2' else 480,
+                showlegend=False,
+                plot_bgcolor='#000' if ui_version=='v2' else None,
+                paper_bgcolor='#000' if ui_version=='v2' else None
+            )
+            return empty_fig
         _, _, _current_temps, latest_data, _msgs = snapshot_func()
         
         if latest_data:
@@ -145,30 +154,37 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                 fig = go.Figure()
                 color_map = {int(sid): COLOR_SEQ[(sid-1)%len(COLOR_SEQ)] for sid in range(1,9)}
                 for sid, g in df.groupby('sensor_id'):
-                    fig.add_trace(go.Scatter(x=g['timestamp'], y=g['temperature'], mode='lines', 
-                                           name=f'센서 {sid}', 
-                                           line=dict(color=color_map.get(int(sid),'#888'), width=2)))
+                    if int(sid) in selected_sensor_lines:
+                        fig.add_trace(go.Scatter(
+                            x=g['timestamp'], y=g['temperature'], mode='lines', name=f'센서 {sid}',
+                            line=dict(color=color_map.get(int(sid),'#888'), width=2)
+                        ))
+                # 레이아웃 (임계선 표시 제거: 복잡도 감소)
                 if ui_version == 'v2':
-                    fig.update_layout(title='전체 센서 실시간 온도', template='plotly_dark', height=560, 
-                                    showlegend=False, plot_bgcolor='#000', paper_bgcolor='#000')
-                    # 연도 제거하고 시:분:초만 표시
+                    fig.update_layout(
+                        title='전체 센서 실시간 온도', template='plotly_dark', height=560,
+                        showlegend=False, plot_bgcolor='#000', paper_bgcolor='#000'
+                    )
                     fig.update_xaxes(tickformat="%H:%M:%S")
                 else:
-                    fig.update_layout(title='전체 센서 실시간 온도', template='plotly_white', height=480, 
-                                    showlegend=False)
-                try:
-                    fig.add_hline(y=TH_DEFAULT, line_dash='dash', line_color='red')
-                    fig.add_hline(y=TL_DEFAULT, line_dash='dash', line_color='blue')
-                except Exception:
-                    pass
+                    fig.update_layout(
+                        title='전체 센서 실시간 온도', template='plotly_white', height=480,
+                        showlegend=False
+                    )
             except Exception:
                 fig = go.Figure()
                 fig.update_layout(title='전체 센서 실시간 온도 (오류)', height=480, 
                                 template='plotly_dark' if ui_version=='v2' else 'plotly_white')
         else:
             fig = go.Figure()
-            fig.update_layout(title='전체 센서 실시간 온도 (데이터 없음)', height=560 if ui_version=='v2' else 480, 
-                            template='plotly_dark' if ui_version=='v2' else 'plotly_white')
+            fig.update_layout(
+                title='전체 센서 실시간 온도 (데이터 없음)',
+                height=560 if ui_version=='v2' else 480,
+                template='plotly_dark' if ui_version=='v2' else 'plotly_white',
+                showlegend=False,
+                plot_bgcolor='#000' if ui_version=='v2' else None,
+                paper_bgcolor='#000' if ui_version=='v2' else None
+            )
             if ui_version=='v2':
                 fig.update_xaxes(tickformat="%H:%M:%S")
         return fig

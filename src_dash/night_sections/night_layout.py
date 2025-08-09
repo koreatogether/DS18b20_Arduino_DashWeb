@@ -14,7 +14,7 @@ def create_layout_v2(initial_port_options, selected_port, initial_port_value, ap
     try:
         # 1. 센서 온도 섹션 (개별 온도 창 8개) + 센서 기능 버튼 섹션 + 개별 도구 섹션
         print("🔍 [NIGHT_LAYOUT] 센서 카드 생성 중...")
-        sensor_cards = create_sensor_cards_with_buttons()
+        sensor_cards = create_sensor_cards_with_buttons(th_default, tl_default)
         print(f"✅ [NIGHT_LAYOUT] 센서 카드 {len(sensor_cards)}개 생성 완료")
         
         # 2. 모달 섹션 (측정 주기 선택 모달)

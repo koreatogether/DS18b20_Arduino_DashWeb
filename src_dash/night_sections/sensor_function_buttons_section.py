@@ -48,7 +48,7 @@ def create_sensor_function_buttons():
     return button_sections
 
 
-def create_sensor_cards_with_buttons():
+def create_sensor_cards_with_buttons(TH_DEFAULT=55.0, TL_DEFAULT=-25.0):
     """온도 카드와 기능 버튼을 결합한 완전한 센서 카드들 - 원하는 구조로 복구"""
     from .individual_graphs_section import get_mini_graph_placeholder
     from .individual_tools_section import create_individual_tools
@@ -83,10 +83,20 @@ def create_sensor_cards_with_buttons():
                 ),
             ], style={'flex': '0 1 200px', 'padding': '10px', 'display': 'flex', 'flexDirection': 'column', 'justifyContent': 'center', 'borderRight': '1px solid #444'}),
             
-            # 오른쪽 위: 개별 그래프
+            # 오른쪽 위: 개별 그래프와 숫자 표시
             html.Div([
-            dcc.Graph(id=f'sensor-{i}-mini-graph', figure=fig, style={'height': '170px'}, config={'displayModeBar': False})
-            ], style={'flex': '1', 'padding': '5px'}),
+                html.Div([
+                    dcc.Graph(id=f'sensor-{i}-mini-graph', figure=fig, style={'height': '170px'}, config={'displayModeBar': False})
+                ], style={'flex': '1'}),
+                html.Div([
+                    html.Div(id=f'sensor-{i}-current-temp', children="--°C", 
+                            style={'color': 'white', 'fontSize': '14px', 'fontWeight': 'bold', 'marginBottom': '5px'}),
+                    html.Div(f"TH {TH_DEFAULT:.1f}", 
+                            style={'color': 'red', 'fontSize': '12px', 'marginBottom': '3px'}),
+                    html.Div(f"TL {TL_DEFAULT:.1f}", 
+                            style={'color': 'blue', 'fontSize': '12px'})
+                ], style={'width': '60px', 'padding': '10px', 'display': 'flex', 'flexDirection': 'column', 'justifyContent': 'center'})
+            ], style={'flex': '1', 'padding': '5px', 'display': 'flex'}),
             
             # 오른쪽 아래: 도구 아이콘
             html.Div([
