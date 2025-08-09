@@ -38,7 +38,7 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
             try:
                 arduino.disconnect()
                 time.sleep(1)
-            except Exception as e:
+            except (OSError, AttributeError) as e:
                 print(f"연결 해제 중 오류: {e}")
             try:
                 if arduino.connect():
@@ -52,7 +52,7 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
                     return "❌ 연결 실패"
             except PermissionError:
                 return "❌ 포트 접근 거부"
-            except Exception as e:
+            except (OSError, AttributeError, ValueError) as e:
                 return f"❌ 오류: {str(e)[:15]}..."
         return "Arduino 재연결"
 
@@ -92,7 +92,7 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
             from core.port_manager import find_arduino_port
             try:
                 from serial.tools import list_ports
-            except Exception:
+            except ImportError:
                 list_ports = None
                 
             options = []
@@ -111,7 +111,7 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
             values_set = {o['value'] for o in options}
             value = current_value if current_value in values_set else default_val
             return options, value
-        except Exception:
+        except (ImportError, AttributeError, OSError):
             return dash.no_update, dash.no_update
 
     @app.callback(
@@ -127,14 +127,14 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
             try:
                 arduino.disconnect()
                 time.sleep(0.5)
-            except Exception: pass
+            except (AttributeError, OSError): pass
             arduino.port = selected
             if arduino.connect():
                 if arduino.start_reading():
                     print(f"✅ Day 모드 Arduino 연결 성공: {selected}")
                     return f"✅ 연결됨: {selected}"
             return "❌ 연결 실패"
-        except Exception as e:
+        except (OSError, AttributeError, ValueError) as e:
             return f"❌ 오류: {str(e)[:20]}..."
 
 
@@ -181,6 +181,6 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
                 cmd = f"SET_INTERVAL {int(interval_ms)}"
                 ok = arduino.send_text_command(cmd)
                 result = {'ok': ok, 'message': f'주기 변경: {interval_ms}ms'}
-        except Exception as e:
+        except (OSError, AttributeError, ValueError) as e:
             result = {'ok': False, 'message': f'에러: {e}'}
         return (result, threshold_map)

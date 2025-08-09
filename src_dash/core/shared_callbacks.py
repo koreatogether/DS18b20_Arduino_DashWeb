@@ -63,12 +63,12 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
             try:
                 df['timestamp'] = pd.to_datetime(df['timestamp'])
                 df['sensor_id'] = df['sensor_id'].astype(str)
-            except Exception: 
+            except (ValueError, KeyError, TypeError): 
                 pass
             try:
                 fig = px.line(df, x='timestamp', y='temperature', color='sensor_id',
                               title='실시간 온도 모니터링 (최근 50개 데이터)', template='plotly_white')
-            except Exception:
+            except (ValueError, KeyError, TypeError):
                 fig = go.Figure()
                 for sid, g in df.groupby('sensor_id'):
                     fig.add_trace(go.Scatter(x=g['timestamp'], y=g['temperature'], mode='lines', name=sid))
@@ -83,7 +83,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                          annotation_text='TH', annotation_position='top left')
             fig.add_hline(y=TL_DEFAULT, line_dash='dash', line_color='blue', 
                          annotation_text='TL', annotation_position='bottom left')
-        except Exception:
+        except (ValueError, AttributeError):
             pass
 
         # Detail graph
@@ -92,14 +92,14 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
             try:
                 df_all['timestamp'] = pd.to_datetime(df_all['timestamp'])
                 df_all['sensor_id'] = df_all['sensor_id'].astype(int)
-            except Exception: 
+            except (ValueError, KeyError, TypeError): 
                 pass
             one = df_all[df_all['sensor_id']==detail_sensor_id]
             if not one.empty:
                 try:
                     detail_fig = px.line(one, x='timestamp', y='temperature', 
                                        title=f'센서 {detail_sensor_id} 상세 그래프', template='plotly_white')
-                except Exception:
+                except (ValueError, KeyError, TypeError):
                     detail_fig = go.Figure()
                     detail_fig.add_trace(go.Scatter(x=one['timestamp'], y=one['temperature'], 
                                                   mode='lines', name=f'센서 {detail_sensor_id}'))
@@ -113,7 +113,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
         try:
             detail_fig.add_hline(y=TH_DEFAULT, line_dash='dash', line_color='red')
             detail_fig.add_hline(y=TL_DEFAULT, line_dash='dash', line_color='blue')
-        except Exception:
+        except (ValueError, AttributeError):
             pass
         
         fig.update_layout(height=440)
@@ -148,7 +148,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                 # 시간 포맷을 시:분:초로만 보여주기 위해 datetime 변환
                 try:
                     df['timestamp'] = pd.to_datetime(df['timestamp'])
-                except Exception:
+                except (ValueError, KeyError, TypeError):
                     pass
                 df = df[df['sensor_id'].isin(selected_sensor_lines)]
                 fig = go.Figure()
@@ -171,7 +171,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                         title='전체 센서 실시간 온도', template='plotly_white', height=480,
                         showlegend=False
                     )
-            except Exception:
+            except (ValueError, KeyError, TypeError):
                 fig = go.Figure()
                 fig.update_layout(title='전체 센서 실시간 온도 (오류)', height=480, 
                                 template='plotly_dark' if ui_version=='v2' else 'plotly_white')

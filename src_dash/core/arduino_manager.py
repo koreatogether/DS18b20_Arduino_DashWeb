@@ -5,7 +5,7 @@ from .port_manager import find_arduino_port
 
 try:
     from serial.tools import list_ports
-except Exception:
+except ImportError:
     list_ports = None
 
 
@@ -41,7 +41,7 @@ def get_initial_port_options():
             
         print(f"✅ [PORT] 최종 옵션 수: {len(options)}, 기본값: {default_val}")
         return options, default_val
-    except Exception as e:
+    except (OSError, AttributeError, ImportError) as e:
         print(f"❌ [PORT] 포트 옵션 가져오기 실패: {e}")
         return [{'label': f'COM{i}', 'value': f'COM{i}'} for i in range(1, 11)], 'COM4'
 
@@ -116,7 +116,7 @@ def cleanup_arduino_resources(arduino):
         if arduino and hasattr(arduino, 'is_connected') and arduino.is_connected:
             arduino.disconnect()
             print("🔌 Arduino 연결 종료")
-    except Exception as e:
+    except (OSError, AttributeError) as e:
         print(f"⚠️ Arduino 연결 해제 중 오류: {e}")
     
     try:
@@ -125,7 +125,7 @@ def cleanup_arduino_resources(arduino):
         if active_threads > 1:
             print(f"⏳ 활성 스레드 {active_threads}개 종료 대기...")
             time.sleep(0.5)
-    except Exception as e:
+    except (AttributeError, RuntimeError) as e:
         print(f"⚠️ 스레드 정리 중 오류: {e}")
     
     print("✅ Arduino 리소스 정리 완료")

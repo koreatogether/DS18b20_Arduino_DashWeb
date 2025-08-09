@@ -11,7 +11,7 @@ def configure_console_encoding():
             sys.stdout.reconfigure(encoding='utf-8', errors='replace')  # type: ignore[attr-defined]
         if hasattr(sys.stderr, 'reconfigure'):
             sys.stderr.reconfigure(encoding='utf-8', errors='replace')  # type: ignore[attr-defined]
-    except Exception:
+    except (AttributeError, OSError):
         pass
 
 
@@ -22,7 +22,7 @@ def debug_callback_registration(app):
         for k in app.callback_map.keys():
             print("  -", k)
         print(f"[DEBUG] Total callbacks registered: {len(app.callback_map)}")
-    except Exception as e:
+    except (AttributeError, KeyError) as e:
         print(f"[DEBUG] Failed to print callback_map keys: {e}")
 
 
@@ -33,7 +33,7 @@ def post_registration_audit(app):
         for k in app.callback_map.keys():
             print("  *", k)
         print(f"[DEBUG] Callback count: {len(app.callback_map)}")
-    except Exception as e:
+    except (AttributeError, KeyError) as e:
         print(f"[DEBUG] Callback audit failed: {e}")
 
 

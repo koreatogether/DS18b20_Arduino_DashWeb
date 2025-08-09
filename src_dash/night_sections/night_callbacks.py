@@ -3,6 +3,13 @@ import dash
 from dash import Input, Output, State, dcc, html
 import plotly.graph_objects as go
 import pandas as pd
+from .mini_graph_utils import (
+    prepare_dataframe, create_sensor_mini_graph, create_empty_mini_graph
+)
+from .connection_utils import (
+    safe_disconnect_arduino, attempt_arduino_connection, 
+    attempt_data_reading, get_port_options_safely, create_fallback_port_options
+)
 
 
 def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT, _snapshot):
@@ -16,22 +23,24 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
         prevent_initial_call=True
     )
     def connect_to_selected_port_v2(n_clicks, selected):
-        # 기존 connect_to_selected_port 로직 재사용
-        if not n_clicks: return "선택 포트로 연결"
-        if not selected: return "❌ 포트 선택 필요"
+        """선택된 포트로 Arduino에 연결합니다."""
+        if not n_clicks:
+            return "선택 포트로 연결"
+        if not selected:
+            return "❌ 포트 선택 필요"
+            
         try:
-            try:
-                arduino.disconnect()
-                import time
-                time.sleep(0.5)
-            except Exception: pass
-            arduino.port = selected
-            if arduino.connect():
-                if arduino.start_reading():
+            # 기존 연결 안전하게 해제
+            safe_disconnect_arduino(arduino)
+            
+            # 새 포트로 연결 시도
+            if attempt_arduino_connection(arduino, selected):
+                if attempt_data_reading(arduino):
                     print(f"✅ Night 모드 Arduino 연결 성공: {selected}")
                     return f"✅ 연결됨: {selected}"
+                    
             return "❌ 연결 실패"
-        except Exception as e:
+        except (OSError, AttributeError, ValueError) as e:
             return f"❌ 오류: {str(e)[:20]}..."
 
     @app.callback(
@@ -39,29 +48,36 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
         Input('reconnect-btn-v2', 'n_clicks')
     )
     def reconnect_arduino_v2(n_clicks):
-        if n_clicks > 0:
-            print("🔄 Night 모드 수동 재연결 시도...")
+        """Arduino를 재연결합니다."""
+        if n_clicks <= 0:
+            return "Arduino 재연결"
+            
+        print("🔄 Night 모드 수동 재연결 시도...")
+        
+        try:
+            # 기존 연결 해제 (더 긴 대기 시간)
             try:
                 arduino.disconnect()
                 import time
                 time.sleep(1)
-            except Exception as e:
+            except (OSError, AttributeError) as e:
                 print(f"연결 해제 중 오류: {e}")
-            try:
-                if arduino.connect():
-                    if arduino.start_reading():
-                        print("✅ Night 모드 수동 재연결 성공!")
-                        return "✅ 재연결 성공"
-                    else:
-                        arduino.disconnect()
-                        return "❌ 데이터 읽기 실패"
+                
+            # 재연결 시도
+            if attempt_arduino_connection(arduino, None):
+                if attempt_data_reading(arduino):
+                    print("✅ Night 모드 수동 재연결 성공!")
+                    return "✅ 재연결 성공"
                 else:
-                    return "❌ 연결 실패"
-            except PermissionError:
-                return "❌ 포트 접근 거부"
-            except Exception as e:
-                return f"❌ 오류: {str(e)[:15]}..."
-        return "Arduino 재연결"
+                    arduino.disconnect()
+                    return "❌ 데이터 읽기 실패"
+            else:
+                return "❌ 연결 실패"
+                
+        except PermissionError:
+            return "❌ 포트 접근 거부"
+        except (OSError, AttributeError, ValueError) as e:
+            return f"❌ 오류: {str(e)[:15]}..."
 
     @app.callback(
         Output('json-toggle-btn-v2', 'children'),
@@ -115,32 +131,24 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
         prevent_initial_call=True
     )
     def unified_refresh_v2_ports(ui_version, current_value):
+        """V2 포트 드롭다운을 새로고침합니다."""
         if ui_version != 'v2':
             return dash.no_update, dash.no_update
+            
         try:
-            from core.port_manager import find_arduino_port
-            try:
-                from serial.tools import list_ports
-            except Exception:
-                list_ports = None
-                
-            options = []
-            default_val = None
-            if list_ports is not None:
-                ports = list(list_ports.comports())
-                for p in ports:
-                    label = f"{p.device} - {p.description}"
-                    options.append({'label': label, 'value': p.device})
-                if ports:
-                    default_val = ports[0].device
+            # 포트 옵션 가져오기
+            options, default_val = get_port_options_safely()
+            
+            # 포트를 찾을 수 없는 경우 기본 옵션 사용
             if not options:
-                options = [{'label': f'COM{i}', 'value': f'COM{i}'} for i in range(1, 11)]
-                default_val = 'COM4'
+                options, default_val = create_fallback_port_options()
                 
+            # 현재 선택된 값이 유효한지 확인
             values_set = {o['value'] for o in options}
             value = current_value if current_value in values_set else default_val
+            
             return options, value
-        except Exception:
+        except (ImportError, AttributeError, OSError):
             return dash.no_update, dash.no_update
 
     # 미니 그래프 업데이트 콜백
@@ -151,87 +159,41 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
         prevent_initial_call=True
     )
     def update_v2_mini_graphs(_n, ui_version):
+        """V2 미니 그래프들을 업데이트합니다."""
         if ui_version != 'v2':
             return [dash.no_update]*8
+            
         _, _, _current_temps, latest_data, _msgs = _snapshot()
+        
+        # 데이터가 없는 경우 빈 그래프 반환
+        if not latest_data:
+            return [create_empty_mini_graph() for _ in range(8)]
+            
+        # 데이터프레임 준비
+        df = prepare_dataframe(latest_data)
+        if df is None:
+            return [create_empty_mini_graph() for _ in range(8)]
+            
+        # 각 센서별 그래프 생성
         figures = []
-        if latest_data:
-            try:
-                df = pd.DataFrame(latest_data)
-                df['sensor_id'] = df['sensor_id'].astype(int)
-                df['timestamp'] = pd.to_datetime(df['timestamp'])
-            except Exception:
-                df = pd.DataFrame(latest_data)
-            ranges_debug = []
-            for sid in range(1,9):
-                sub = df[df['sensor_id']==sid]
-                fig = go.Figure()
-                if not sub.empty:
-                    x = sub['timestamp']
-                    y = sub['temperature']
-                    fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line=dict(color=COLOR_SEQ[(sid-1)%len(COLOR_SEQ)], width=2)))
-                    try:
-                        vmin = float(min(y)); vmax = float(max(y))
-                        vmin = min(vmin, TL_DEFAULT); vmax = max(vmax, TH_DEFAULT)
-                        if vmin == vmax:
-                            vmin -= 0.5; vmax += 0.5
-                        pad = (vmax - vmin) * 0.1
-                        fig.update_yaxes(range=[vmin - pad, vmax + pad])
-                        ranges_debug.append(f"{sid}:{vmin:.1f}-{vmax:.1f}")
-                    except Exception:
-                        pass
-                    # 시간 축을 시:분:초만 표시 (연/월/일 제거)
-                    fig.update_xaxes(
-                        showgrid=False,
-                        tickfont=dict(color='#aaa'),
-                        nticks=4,
-                        tickformat="%H:%M:%S",
-                        ticklabelposition="outside bottom",
-                        ticklabelstandoff=10
-                    )
-                    # y축 왼쪽 숫자(50, 0) 제거
-                    fig.update_yaxes(showgrid=False, tickfont=dict(color='#aaa'), nticks=3, showticklabels=False)
-                    # 오른쪽 끝 x값
-                    x_max = x.iloc[-1] if len(x) > 0 else None
-                    # 최신 온도값을 별도 HTML 요소에 표시하기 위해 저장
-                    latest_temp = y.iloc[-1] if len(y) else None
-                    # 임계선: TH(위), TL(아래) 점선 / 0은 실선
-                    # Zero line (solid, 1px, 옅은 색상)
-                    try:
-                        fig.add_hline(y=0, line_dash='solid', line_color='#ccc', line_width=1)
-                    except Exception:
-                        pass
-                    # TH & TL lines (dashed) - 라벨 제거하고 선만 표시
-                    for val, color in [
-                        (TH_DEFAULT, 'red'),
-                        (TL_DEFAULT, 'blue')
-                    ]:
-                        try:
-                            fig.add_hline(y=val, line_dash='dash', line_color=color)
-                        except Exception:
-                            pass
-                else:
-                    fig.add_annotation(text='데이터 없음', showarrow=False, font=dict(color='white', size=10))
-                fig.update_layout(
-                    template='plotly_dark',
-                    margin=dict(l=4, r=10, t=16, b=14),
-                    height=170,
-                    xaxis=dict(title=None),
-                    yaxis=dict(title=None),
-                    showlegend=False,
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    paper_bgcolor='rgba(0,0,0,0)'
-                )
-                figures.append(fig)
-            if ranges_debug:
-                print("🌙 v2 mini graphs 갱신: " + ", ".join(ranges_debug))
-        else:
-            for sid in range(1,9):
-                fig = go.Figure()
-                fig.add_annotation(text='데이터 없음', showarrow=False, font=dict(color='white', size=10))
-                fig.update_layout(template='plotly_dark', margin=dict(l=4, r=10, t=16, b=14), height=170,
-                                  plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
-                figures.append(fig)
+        ranges_debug = []
+        
+        for sid in range(1, 9):
+            sensor_data = df[df['sensor_id'] == sid]
+            fig = create_sensor_mini_graph(
+                sensor_data, sid, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT
+            )
+            figures.append(fig)
+            
+            # 디버그 정보 수집
+            if not sensor_data.empty:
+                y = sensor_data['temperature']
+                vmin, vmax = float(min(y)), float(max(y))
+                ranges_debug.append(f"{sid}:{vmin:.1f}-{vmax:.1f}")
+                
+        if ranges_debug:
+            print("🌙 v2 mini graphs 갱신: " + ", ".join(ranges_debug))
+            
         return figures
 
     # 별도 온도 표시 업데이트 콜백
@@ -257,7 +219,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
                         temp_displays.append(f"{latest_temp:.1f}°C")
                     else:
                         temp_displays.append("--°C")
-                except Exception:
+                except (KeyError, IndexError, ValueError):
                     temp_displays.append("--°C")
             else:
                 temp_displays.append("--°C")
@@ -334,7 +296,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
                 cmd = f"SET_INTERVAL {sensor} {ms}"
                 ok = arduino.send_text_command(cmd)
                 print(f"🕒 센서 {sensor} 주기 설정 {ms}ms 전송 결과: {ok}")
-            except Exception as e:
+            except (OSError, AttributeError, ValueError) as e:
                 print(f"주기 전송 오류: {e}")
         return intervals, False
 
