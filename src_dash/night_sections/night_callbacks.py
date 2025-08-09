@@ -180,7 +180,15 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
                         ranges_debug.append(f"{sid}:{vmin:.1f}-{vmax:.1f}")
                     except Exception:
                         pass
-                    fig.update_xaxes(showgrid=False, tickfont=dict(color='#aaa'), nticks=3)
+                    # 시간 축을 시:분:초만 표시 (연/월/일 제거)
+                    fig.update_xaxes(
+                        showgrid=False,
+                        tickfont=dict(color='#aaa'),
+                        nticks=4,
+                        tickformat="%H:%M:%S",
+                        ticklabelposition="outside bottom",
+                        ticklabelstandoff=10
+                    )
                     fig.update_yaxes(showgrid=False, tickfont=dict(color='#aaa'), nticks=3)
                     try:
                         fig.add_hline(y=TH_DEFAULT, line_dash='dash', line_color='red')
@@ -191,8 +199,8 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
                     fig.add_annotation(text='데이터 없음', showarrow=False, font=dict(color='white', size=10))
                 fig.update_layout(
                     template='plotly_dark',
-                    margin=dict(l=4, r=4, t=4, b=4),
-                    height=100,
+                    margin=dict(l=4, r=4, t=16, b=14),
+                    height=170,
                     xaxis=dict(title=None),
                     yaxis=dict(title=None),
                     showlegend=False,
@@ -206,7 +214,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
             for sid in range(1,9):
                 fig = go.Figure()
                 fig.add_annotation(text='데이터 없음', showarrow=False, font=dict(color='white', size=10))
-                fig.update_layout(template='plotly_dark', margin=dict(l=4, r=4, t=4, b=4), height=100,
+                fig.update_layout(template='plotly_dark', margin=dict(l=4, r=4, t=16, b=14), height=170,
                                   plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
                 figures.append(fig)
         return figures

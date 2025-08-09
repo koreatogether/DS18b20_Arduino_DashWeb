@@ -85,7 +85,7 @@ def create_sensor_cards_with_buttons():
             
             # 오른쪽 위: 개별 그래프
             html.Div([
-                dcc.Graph(id=f'sensor-{i}-mini-graph', figure=fig, style={'height': '120px'}, config={'displayModeBar': False})
+            dcc.Graph(id=f'sensor-{i}-mini-graph', figure=fig, style={'height': '170px'}, config={'displayModeBar': False})
             ], style={'flex': '1', 'padding': '5px'}),
             
             # 오른쪽 아래: 도구 아이콘
@@ -93,7 +93,7 @@ def create_sensor_cards_with_buttons():
                 tool_sections[i-1]
             ], style={'flex': '0 1 80px', 'padding': '10px', 'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center'})
             
-        ], style={'display': 'flex', 'alignItems': 'stretch', 'backgroundColor': '#1e1e1e', 'borderRadius': '10px', 'marginBottom': '15px', 'border': '1px solid #444', 'minHeight': '140px'})
+    ], style={'display': 'flex', 'alignItems': 'stretch', 'backgroundColor': '#1e1e1e', 'borderRadius': '10px', 'marginBottom': '28px', 'border': '1px solid #444', 'minHeight': '190px'})
         
         sensor_cards.append(card)
     

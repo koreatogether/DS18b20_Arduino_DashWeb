@@ -135,6 +135,11 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
             try:
                 df = pd.DataFrame(latest_data)
                 df['sensor_id'] = df['sensor_id'].astype(int)
+                # 시간 포맷을 시:분:초로만 보여주기 위해 datetime 변환
+                try:
+                    df['timestamp'] = pd.to_datetime(df['timestamp'])
+                except Exception:
+                    pass
                 df = df[df['sensor_id'].isin(selected_sensor_lines)]
                 fig = go.Figure()
                 color_map = {int(sid): COLOR_SEQ[(sid-1)%len(COLOR_SEQ)] for sid in range(1,9)}
@@ -143,8 +148,10 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                                            name=f'센서 {sid}', 
                                            line=dict(color=color_map.get(int(sid),'#888'), width=2)))
                 if ui_version == 'v2':
-                    fig.update_layout(title='전체 센서 실시간 온도', template='plotly_dark', height=480, 
+                    fig.update_layout(title='전체 센서 실시간 온도', template='plotly_dark', height=560, 
                                     showlegend=False, plot_bgcolor='#000', paper_bgcolor='#000')
+                    # 연도 제거하고 시:분:초만 표시
+                    fig.update_xaxes(tickformat="%H:%M:%S")
                 else:
                     fig.update_layout(title='전체 센서 실시간 온도', template='plotly_white', height=480, 
                                     showlegend=False)
@@ -159,8 +166,10 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                                 template='plotly_dark' if ui_version=='v2' else 'plotly_white')
         else:
             fig = go.Figure()
-            fig.update_layout(title='전체 센서 실시간 온도 (데이터 없음)', height=480, 
+            fig.update_layout(title='전체 센서 실시간 온도 (데이터 없음)', height=560 if ui_version=='v2' else 480, 
                             template='plotly_dark' if ui_version=='v2' else 'plotly_white')
+            if ui_version=='v2':
+                fig.update_xaxes(tickformat="%H:%M:%S")
         return fig
 
     # 콜백 충돌 방지를 위해 임시 비활성화

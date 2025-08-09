@@ -21,10 +21,9 @@ def create_combined_graph_section():
             # 메인 그래프
             dcc.Graph(
                 id='combined-graph', 
-                style={'flex': '1', 'height': '480px'}, 
+                style={'flex': '1', 'height': '560px'}, 
                 config={'displaylogo': False}
             ),
-            
             # 그래프 컨트롤 패널
             html.Div([
                 html.Strong(
@@ -35,45 +34,33 @@ def create_combined_graph_section():
                         'marginBottom': '4px'
                     }
                 ),
-                
-                # 센서 선택 체크리스트
-                dcc.Checklist(
-                    id='sensor-line-toggle',
-                    options=[{'label': f"센서 {i}", 'value': i} for i in range(1,9)],
-                    value=[i for i in range(1,9)],
-                    labelStyle={
-                        'display': 'block', 
-                        'margin': '2px 0', 
-                        'color': 'white'
-                    }
-                ),
-                
-                # 색상 범례
+                # 센서 선택 체크리스트 + 색상 박스 한 줄에 표시
                 html.Div([
                     html.Div([
+                        dcc.Checklist(
+                            id=f'sensor-line-toggle-{i}',
+                            options=[{'label': f"센서 {i}", 'value': i}],
+                            value=[i],
+                            labelStyle={
+                                'display': 'inline-block',
+                                'marginRight': '6px',
+                                'color': 'white',
+                                'verticalAlign': 'middle'
+                            },
+                            style={'display': 'inline-block', 'verticalAlign': 'middle'}
+                        ),
                         html.Span(style={
-                            'display': 'inline-block', 
-                            'width': '10px', 
-                            'height': '10px',
-                            'backgroundColor': COLOR_SEQ[i-1], 
-                            'marginRight': '6px',
-                            'borderRadius': '2px'
-                        }),
-                        html.Span(
-                            f"센서 {i}", 
-                            style={'fontSize': '11px', 'color': 'white'}
-                        )
-                    ], style={
-                        'display': 'flex', 
-                        'alignItems': 'center', 
-                        'margin': '2px 0'
-                    })
+                            'display': 'inline-block',
+                            'width': '14px',
+                            'height': '14px',
+                            'backgroundColor': COLOR_SEQ[i-1],
+                            'marginLeft': '2px',
+                            'borderRadius': '3px',
+                            'verticalAlign': 'middle'
+                        })
+                    ], style={'display': 'flex', 'alignItems': 'center', 'margin': '2px 0'})
                     for i in range(1,9)
-                ], id='sensor-color-legend', style={
-                    'marginTop': '6px', 
-                    'marginBottom': '6px'
-                }),
-                
+                ], style={'marginBottom': '8px'}),
                 # 전체 선택/해제 버튼
                 html.Button(
                     '전체 선택', 

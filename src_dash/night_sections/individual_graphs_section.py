@@ -17,7 +17,7 @@ def create_individual_mini_graphs():
             margin=dict(l=10, r=10, t=10, b=10),
             xaxis=dict(showgrid=False, visible=False),
             yaxis=dict(showgrid=False, visible=False),
-            height=100,
+            height=160,
             showlegend=False
         )
         
@@ -43,7 +43,7 @@ def get_mini_graph_placeholder():
         margin=dict(l=10, r=10, t=10, b=10),
         xaxis=dict(showgrid=False, visible=False),
         yaxis=dict(showgrid=False, visible=False),
-        height=100,
+        height=160,
         showlegend=False
     )
     return fig
