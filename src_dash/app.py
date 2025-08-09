@@ -233,7 +233,7 @@ post_registration_audit(app)
 if __name__ == '__main__':
     try:
         print_startup_info(ARDUINO_CONNECTED)
-        app.run(debug=False, host='127.0.0.1', port=8050, 
+        app.run(debug=True, host='127.0.0.1', port=8050, 
                 use_reloader=False, threaded=True)
     except KeyboardInterrupt:
         print("\n🛑 사용자가 애플리케이션을 종료했습니다")

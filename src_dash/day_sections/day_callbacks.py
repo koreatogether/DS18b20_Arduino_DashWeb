@@ -82,15 +82,12 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
 
     @app.callback(
         [Output('port-dropdown', 'options'),
-         Output('port-dropdown', 'value'),
-         Output('port-dropdown-2', 'options'),
-         Output('port-dropdown-2', 'value')],
+         Output('port-dropdown', 'value')],
         [Input('interval-component', 'n_intervals')],
-        [State('port-dropdown', 'value'),
-        State('port-dropdown-2', 'value')],
+        [State('port-dropdown', 'value')],
         prevent_initial_call=True
     )
-    def refresh_port_options(_n, current_value_1, current_value_2):
+    def refresh_port_options(_n, current_value):
         try:
             from core.port_manager import find_arduino_port
             try:
@@ -112,11 +109,10 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
                 default_val = 'COM4'
                 
             values_set = {o['value'] for o in options}
-            value1 = current_value_1 if current_value_1 in values_set else default_val
-            value2 = current_value_2 if current_value_2 in values_set else value1
-            return options, value1, options, value2
+            value = current_value if current_value in values_set else default_val
+            return options, value
         except Exception:
-            return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            return dash.no_update, dash.no_update
 
     @app.callback(
         Output('connect-port-btn', 'children'),
@@ -141,14 +137,6 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
         except Exception as e:
             return f"❌ 오류: {str(e)[:20]}..."
 
-    @app.callback(
-        Output('connect-port-btn-2', 'children'),
-        Input('connect-port-btn-2', 'n_clicks'),
-        State('port-dropdown-2', 'value'),
-        prevent_initial_call=True
-    )
-    def connect_to_selected_port_sidebar(n_clicks, selected):
-        return connect_to_selected_port(n_clicks, selected)
 
     @app.callback(
         Output('last-command-result', 'data'),
