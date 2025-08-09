@@ -127,7 +127,8 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
         prevent_initial_call=True
     )
     def update_combined_graph(_n, selected_sensor_lines, ui_version):
-        if not isinstance(selected_sensor_lines, list) or not selected_sensor_lines:
+        # 빈 선택이면 전체 센서 표시 (전체 그래프 역할 유지)
+        if not isinstance(selected_sensor_lines, list) or len(selected_sensor_lines) == 0:
             selected_sensor_lines = [i for i in range(1,9)]
         _, _, _current_temps, latest_data, _msgs = snapshot_func()
         
