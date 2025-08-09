@@ -34,33 +34,19 @@ def create_combined_graph_section():
                         'marginBottom': '4px'
                     }
                 ),
-                # 센서 선택 체크리스트 + 색상 박스 한 줄에 표시
-                html.Div([
-                    html.Div([
-                        dcc.Checklist(
-                            id=f'sensor-line-toggle-{i}',
-                            options=[{'label': f"센서 {i}", 'value': i}],
-                            value=[i],
-                            labelStyle={
-                                'display': 'inline-block',
-                                'marginRight': '6px',
-                                'color': 'white',
-                                'verticalAlign': 'middle'
-                            },
-                            style={'display': 'inline-block', 'verticalAlign': 'middle'}
-                        ),
-                        html.Span(style={
-                            'display': 'inline-block',
-                            'width': '14px',
-                            'height': '14px',
-                            'backgroundColor': COLOR_SEQ[i-1],
-                            'marginLeft': '2px',
-                            'borderRadius': '3px',
-                            'verticalAlign': 'middle'
-                        })
-                    ], style={'display': 'flex', 'alignItems': 'center', 'margin': '2px 0'})
-                    for i in range(1,9)
-                ], style={'marginBottom': '8px'}),
+                # 센서 선택 체크리스트 (기능 유지용 id)
+                # 기능 안정화를 위해 순수 문자열 라벨 체크리스트로 복구
+                dcc.Checklist(
+                    id='sensor-line-toggle',
+                    options=[{'label': f"센서 {i}", 'value': i} for i in range(1,9)],
+                    value=[i for i in range(1,9)],
+                    labelStyle={
+                        'display': 'block',
+                        'margin': '2px 0',
+                        'color': 'white'
+                    },
+                    style={'marginBottom': '8px'}
+                ),
                 # 전체 선택/해제 버튼
                 html.Button(
                     '전체 선택', 
