@@ -196,9 +196,9 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
                     # 최신 온도값을 별도 HTML 요소에 표시하기 위해 저장
                     latest_temp = y.iloc[-1] if len(y) else None
                     # 임계선: TH(위), TL(아래) 점선 / 0은 실선
-                    # Zero line (solid)
+                    # Zero line (solid, 1px, 옅은 색상)
                     try:
-                        fig.add_hline(y=0, line_dash='solid', line_color='#888')
+                        fig.add_hline(y=0, line_dash='solid', line_color='#ccc', line_width=1)
                     except Exception:
                         pass
                     # TH & TL lines (dashed) - 라벨 제거하고 선만 표시

@@ -25,7 +25,7 @@ def create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE):
         html.Hr(),
         html.Div([
             html.Div([
-                html.H3("센서 상태", style={'textAlign':'center'}),
+                html.H3('센서 상태', style={'textAlign':'center'}),
                 html.Div(id='sensor-cards', children=[
                     html.Div([
                         html.H4(f"센서 {i}", style={'margin':'5px'}),
@@ -41,37 +41,14 @@ def create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE):
                             dcc.Graph(id='combined-graph', style={'flex':'1'}, config={'displaylogo': False}),
                             html.Div([
                                 html.Strong("표시 센서"),
-                                dcc.Checklist(id='sensor-line-toggle', options=[{'label':f"센서 {i}",'value':i} for i in range(1,9)], value=[i for i in range(1,9)], labelStyle={'display':'block','margin':'2px 0'}),
+                                dcc.Checklist(id='sensor-line-toggle', options=[{'label':f"센서 {i}", 'value':i} for i in range(1,9)], value=[i for i in range(1,9)], labelStyle={'display':'block','margin':'2px 0'}),
                                 html.Button('전체 선택', id='btn-select-all', n_clicks=0, style={'marginTop':'6px','width':'100%'}),
-                                html.Button('전체 해제', id='btn-deselect-all', n_clicks=0, style={'marginTop':'4px','width':'100%'}),
+                                html.Button('전체 해제', id='btn-deselect-all', n_clicks=0, style={'marginTop':'4px','width':'100%'})
                             ], style={'width':'140px','marginLeft':'12px'})
                         ], style={'display':'flex','alignItems':'flex-start'})
                     ], style={'marginTop':'20px','padding':'10px','border':'1px solid #ddd','borderRadius':'8px','backgroundColor':'#fff'})
                 ])
             ], style={'flex':'1','minWidth':'340px'}),
-            html.Div([
-                html.H3("빠른 설정", style={'textAlign':'center'}),
-                html.Div([
-                    html.Label('포트 선택', style={'fontWeight':'bold'}),
-                    dcc.Dropdown(id='port-dropdown-2', options=cast(Any, INITIAL_PORT_OPTIONS), value=selected_port or INITIAL_PORT_VALUE, placeholder='포트 선택', style={'width':'100%','marginBottom':'6px'}),
-                    html.Button('선택 포트로 연결', id='connect-port-btn-2', n_clicks=0, style={'width':'100%','marginBottom':'16px'})
-                ], style={'marginBottom':'10px'}),
-                html.Div([
-                    html.Button('ID 변경', id='btn-change-id', n_clicks=0, style={'width':'100%','marginBottom':'10px'}),
-                    dcc.Input(id='input-old-id', type='number', placeholder='현재 ID', min=1, max=64, style={'width':'48%','marginRight':'4%'}),
-                    dcc.Input(id='input-new-id', type='number', placeholder='새 ID', min=1, max=64, style={'width':'48%'}),
-                ], style={'marginBottom':'15px'}),
-                html.Div([
-                    html.Button('임계값 변경 (TL/TH)', id='btn-change-thresholds', n_clicks=0, style={'width':'100%','marginBottom':'10px'}),
-                    dcc.Input(id='input-target-id', type='number', placeholder='센서 ID', min=1, max=64, style={'width':'100%','marginBottom':'6px'}),
-                    dcc.Input(id='input-tl', type='number', placeholder='TL 하한(°C)', step=0.5, style={'width':'48%','marginRight':'4%'}),
-                    dcc.Input(id='input-th', type='number', placeholder='TH 상한(°C)', step=0.5, style={'width':'48%'}),
-                ], style={'marginBottom':'15px'}),
-                html.Div([
-                    html.Button('측정 주기 변경', id='btn-change-interval', n_clicks=0, style={'width':'100%','marginBottom':'10px'}),
-                    dcc.Input(id='input-interval', type='number', placeholder='주기(ms)', min=100, step=100, style={'width':'100%'}),
-                ]),
-            ], style={'width':'280px','marginLeft':'20px','padding':'10px','border':'1px solid #ddd','borderRadius':'8px','height':'100%'}),
         ], style={'display':'flex','alignItems':'flex-start','flexWrap':'wrap'}),
         html.Hr(),
         html.Div([
