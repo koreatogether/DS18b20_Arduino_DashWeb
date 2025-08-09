@@ -4,12 +4,56 @@ from dash import html, dcc
 
 def create_main_layout(initial_port_options, selected_port, initial_port_value, create_layout_v1):
     """메인 앱 레이아웃을 생성합니다."""
+    print("🔍 [LAYOUT] 메인 레이아웃 생성 시작")
+    print("🔍 [LAYOUT] 버튼 생성 중...")
+    print("✅ [LAYOUT] Day 버튼 생성 완료 (ID: btn-ver-1)")
+    print("✅ [LAYOUT] Night 버튼 생성 완료 (ID: btn-ver-2)")
+    
     return html.Div([
         html.Div([
             html.H1("DS18B20 Dashboard", style={'flex': '1'}),
             html.Div([
-                html.Button('☀️ Day (v1)', id='btn-ver-1', n_clicks=0, style={'marginRight': '5px'}),
-                html.Button('🌙 Night (v2)', id='btn-ver-2', n_clicks=0),
+                html.Button('☀️ Day (v1)', 
+                           id='btn-ver-1', 
+                           n_clicks=0,
+                           **{
+                               'data-testid': 'day-button',
+                               'style': {
+                                   'marginRight': '10px', 
+                                   'padding': '12px 20px', 
+                                   'fontSize': '16px',
+                                   'fontWeight': 'bold',
+                                   'border': '3px solid #007bff',
+                                   'borderRadius': '8px',
+                                   'backgroundColor': '#007bff',
+                                   'color': 'white',
+                                   'cursor': 'pointer',
+                                   'transition': 'all 0.3s ease',
+                                   'boxShadow': '0 2px 4px rgba(0,123,255,0.3)',
+                                   'minWidth': '120px',
+                                   'height': '50px'
+                               }
+                           }),
+                html.Button('🌙 Night (v2)', 
+                           id='btn-ver-2', 
+                           n_clicks=0,
+                           **{
+                               'data-testid': 'night-button',
+                               'style': {
+                                   'padding': '12px 20px', 
+                                   'fontSize': '16px',
+                                   'fontWeight': 'bold',
+                                   'border': '3px solid #6c757d',
+                                   'borderRadius': '8px',
+                                   'backgroundColor': '#6c757d',
+                                   'color': 'white',
+                                   'cursor': 'pointer',
+                                   'transition': 'all 0.3s ease',
+                                   'boxShadow': '0 2px 4px rgba(108,117,125,0.3)',
+                                   'minWidth': '120px',
+                                   'height': '50px'
+                               }
+                           }),
             ], style={'textAlign': 'right'})
         ], style={
             'display': 'flex', 

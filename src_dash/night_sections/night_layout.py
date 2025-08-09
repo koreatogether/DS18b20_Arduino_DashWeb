@@ -1,31 +1,47 @@
 """Night Mode (v2) 레이아웃 - 섹션별로 분리된 구조"""
 from dash import html
-from night_sections.sensor_function_buttons_section import create_sensor_cards_with_buttons
-from night_sections.combined_graph_section import create_combined_graph_section
-from night_sections.control_log_section import create_control_log_section
-from night_sections.modal_section import create_interval_modal, create_confirm_dialog
-from night_sections.night_callbacks import register_night_callbacks
+from .sensor_function_buttons_section import create_sensor_cards_with_buttons
+from .combined_graph_section import create_combined_graph_section
+from .control_log_section import create_control_log_section
+from .modal_section import create_interval_modal, create_confirm_dialog
+from .night_callbacks import register_night_callbacks
 
 
 def create_layout_v2(initial_port_options, selected_port, initial_port_value, app=None, arduino=None, arduino_connected=None, color_seq=None, th_default=None, tl_default=None, snapshot_func=None):
     """Night mode (v2) – dark theme; 섹션별로 분리된 구조"""
+    print("🔍 [NIGHT_LAYOUT] create_layout_v2 함수 시작")
     
-    # 1. 센서 온도 섹션 (개별 온도 창 8개) + 센서 기능 버튼 섹션 + 개별 도구 섹션
-    sensor_cards = create_sensor_cards_with_buttons()
-    
-    # 2. 모달 섹션 (측정 주기 선택 모달)
-    interval_modal = create_interval_modal()
-    confirm_dialog = create_confirm_dialog()
-    
-    # 3. 종합 그래프 섹션
-    combined_graph_block = create_combined_graph_section()
-    
-    # 4. 제어&로그 섹션
-    control_panel_v2 = create_control_log_section(
-        initial_port_options, 
-        selected_port, 
-        initial_port_value
-    )
+    try:
+        # 1. 센서 온도 섹션 (개별 온도 창 8개) + 센서 기능 버튼 섹션 + 개별 도구 섹션
+        print("🔍 [NIGHT_LAYOUT] 센서 카드 생성 중...")
+        sensor_cards = create_sensor_cards_with_buttons()
+        print(f"✅ [NIGHT_LAYOUT] 센서 카드 {len(sensor_cards)}개 생성 완료")
+        
+        # 2. 모달 섹션 (측정 주기 선택 모달)
+        print("🔍 [NIGHT_LAYOUT] 모달 섹션 생성 중...")
+        interval_modal = create_interval_modal()
+        confirm_dialog = create_confirm_dialog()
+        print("✅ [NIGHT_LAYOUT] 모달 섹션 생성 완료")
+        
+        # 3. 종합 그래프 섹션
+        print("🔍 [NIGHT_LAYOUT] 종합 그래프 섹션 생성 중...")
+        combined_graph_block = create_combined_graph_section()
+        print("✅ [NIGHT_LAYOUT] 종합 그래프 섹션 생성 완료")
+        
+        # 4. 제어&로그 섹션
+        print("🔍 [NIGHT_LAYOUT] 제어&로그 섹션 생성 중...")
+        control_panel_v2 = create_control_log_section(
+            initial_port_options, 
+            selected_port, 
+            initial_port_value
+        )
+        print("✅ [NIGHT_LAYOUT] 제어&로그 섹션 생성 완료")
+        
+    except Exception as e:
+        print(f"❌ [NIGHT_LAYOUT] 섹션 생성 중 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
     
     # 5. 숨겨진 플레이스홀더 (공유 콜백 출력용)
     hidden_placeholders = html.Div([

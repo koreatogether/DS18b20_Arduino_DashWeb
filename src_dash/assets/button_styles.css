@@ -1,0 +1,70 @@
+/* 버튼 호버 및 클릭 효과 */
+#btn-ver-1:hover {
+    background-color: #0056b3 !important;
+    border-color: #0056b3 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0,123,255,0.4) !important;
+}
+
+#btn-ver-1:active {
+    background-color: #004085 !important;
+    border-color: #004085 !important;
+    transform: translateY(0px) !important;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.6) !important;
+}
+
+#btn-ver-2:hover {
+    background-color: #545b62 !important;
+    border-color: #545b62 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(108,117,125,0.4) !important;
+}
+
+#btn-ver-2:active {
+    background-color: #3d4449 !important;
+    border-color: #3d4449 !important;
+    transform: translateY(0px) !important;
+    box-shadow: 0 2px 4px rgba(108,117,125,0.6) !important;
+}
+
+/* 모드 표시 스타일 */
+#mode-indicator {
+    font-size: 18px !important;
+    font-weight: bold !important;
+    color: #007bff !important;
+    text-align: center !important;
+    margin: 10px 0 !important;
+    padding: 10px !important;
+    background-color: #f8f9fa !important;
+    border-radius: 5px !important;
+    border: 2px solid #007bff !important;
+}
+
+#mode-feedback {
+    font-size: 16px !important;
+    font-weight: bold !important;
+    color: #28a745 !important;
+    text-align: center !important;
+    margin: 5px 0 !important;
+    padding: 8px !important;
+    background-color: #d4edda !important;
+    border-radius: 5px !important;
+    border: 1px solid #28a745 !important;
+    animation: fadeIn 0.5s ease-in-out !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 버튼 클릭 애니메이션 */
+.button-clicked {
+    animation: buttonClick 0.3s ease-in-out !important;
+}
+
+@keyframes buttonClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}

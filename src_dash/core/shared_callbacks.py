@@ -163,12 +163,14 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                             template='plotly_dark' if ui_version=='v2' else 'plotly_white')
         return fig
 
-    @app.callback(
-        Output('mode-indicator', 'children'),
-        Output('mode-feedback', 'children'),
-        Input('ui-version-store', 'data')
-    )
-    def show_mode_indicator_and_feedback(ui_version):
-        if ui_version == 'v2':
-            return "현재 모드: 🌙 Night (v2)", "🌙 Night 모드로 전환됨"
-        return "현재 모드: ☀️ Day (v1)", "☀️ Day 모드로 전환됨"
+    # 콜백 충돌 방지를 위해 임시 비활성화
+    # @app.callback(
+    #     Output('mode-indicator', 'children'),
+    #     Output('mode-feedback', 'children'),
+    #     Input('ui-version-store', 'data')
+    # )
+    # def show_mode_indicator_and_feedback(ui_version):
+    #     if ui_version == 'v2':
+    #         return "현재 모드: 🌙 Night (v2)", "🌙 Night 모드로 전환됨"
+    #     return "현재 모드: ☀️ Day (v1)", "☀️ Day 모드로 전환됨"
+    pass

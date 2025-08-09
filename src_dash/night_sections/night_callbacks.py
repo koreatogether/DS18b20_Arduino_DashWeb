@@ -222,17 +222,17 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
     @app.callback(
         Output('interval-modal', 'style'),
         Output('interval-modal-target-sensor', 'data'),
-        [Input(f'btn-change-interval-v2-{i}', 'n_clicks') for i in range(1,9)] + [Input('interval-cancel-btn','n_clicks')],
+        [Input(f'btn-change-interval-v2-{i}', 'n_clicks') for i in range(1,9)] + [Input('interval-cancel-btn','n_clicks')] + [Input('interval-confirm-dialog', 'submit_n_clicks')],
         State('interval-modal-target-sensor', 'data'),
         prevent_initial_call=True
     )
     def open_close_interval_modal(*args):
-        *btn_clicks, cancel_clicks, current_target = args
+        *btn_clicks, cancel_clicks, submit_clicks, current_target = args
         ctx = dash.callback_context
         if not ctx.triggered:
             raise dash.exceptions.PreventUpdate
         trig = ctx.triggered[0]['prop_id'].split('.')[0]
-        if trig == 'interval-cancel-btn':
+        if trig == 'interval-cancel-btn' or trig == 'interval-confirm-dialog':
             return {'display':'none'}, None
         for idx, n in enumerate(btn_clicks, start=1):
             if trig == f'btn-change-interval-v2-{idx}' and n:
@@ -251,7 +251,6 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
         return f"센서 {target} 선택됨: {_format_interval(int(value))}"
 
     @app.callback(
-        Output('interval-confirm-dialog','displayed'),
         Output('pending-interval-selection','data'),
         Input('interval-apply-btn','n_clicks'),
         State('interval-select','value'),
@@ -261,11 +260,10 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
     def trigger_confirm(n_apply, value, target):
         if not n_apply or value is None or target is None:
             raise dash.exceptions.PreventUpdate
-        return True, {'sensor': target, 'interval_ms': int(value)}
+        return {'sensor': target, 'interval_ms': int(value), 'show_dialog': True}
 
     @app.callback(
         Output('sensor-intervals-store','data'),
-        Output('interval-modal','style'),
         Output('interval-confirm-dialog','displayed'),
         Input('interval-confirm-dialog','submit_n_clicks'),
         State('pending-interval-selection','data'),
@@ -286,7 +284,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
                 print(f"🕒 센서 {sensor} 주기 설정 {ms}ms 전송 결과: {ok}")
             except Exception as e:
                 print(f"주기 전송 오류: {e}")
-        return intervals, {'display':'none'}, False
+        return intervals, False
 
     @app.callback(
         [Output(f'btn-change-interval-v2-{i}','children') for i in range(1,9)],

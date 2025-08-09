@@ -11,22 +11,44 @@ except Exception:
 
 def get_initial_port_options():
     """초기 포트 옵션을 가져옵니다."""
+    print("🔍 [PORT] 포트 옵션 가져오기 시작")
     try:
         options = []
         default_val = None
         if list_ports is not None:
             ports = list(list_ports.comports())
+            print(f"🔍 [PORT] 감지된 포트 수: {len(ports)}")
             for p in ports:
                 label = f"{p.device} - {p.description}"
                 options.append({'label': label, 'value': p.device})
+                print(f"🔍 [PORT] 포트 발견: {p.device} - {p.description}")
             if ports:
-                default_val = ports[0].device
+                # Arduino 포트를 우선적으로 선택
+                arduino_port = find_arduino_port()
+                if arduino_port:
+                    default_val = arduino_port
+                    print(f"🔍 [PORT] Arduino 포트를 기본값으로 설정: {default_val}")
+                else:
+                    default_val = ports[0].device
+                    print(f"🔍 [PORT] 첫 번째 포트를 기본값으로 설정: {default_val}")
+        else:
+            print("⚠️ [PORT] list_ports 모듈을 사용할 수 없음")
+            
         if not options:
+            print("⚠️ [PORT] 포트를 찾을 수 없어 기본 옵션 생성")
             options = [{'label': f'COM{i}', 'value': f'COM{i}'} for i in range(1, 11)]
             default_val = 'COM4'
+            
+        print(f"✅ [PORT] 최종 옵션 수: {len(options)}, 기본값: {default_val}")
         return options, default_val
-    except Exception:
-        return [], None
+    except Exception as e:
+        print(f"❌ [PORT] 포트 옵션 가져오기 실패: {e}")
+        return [{'label': f'COM{i}', 'value': f'COM{i}'} for i in range(1, 11)], 'COM4'
+
+def get_current_port_options():
+    """현재 포트 옵션을 실시간으로 가져옵니다."""
+    print("🔄 [PORT] 포트 옵션 실시간 갱신")
+    return get_initial_port_options()
 
 
 def try_arduino_connection(arduino, max_attempts=3):
