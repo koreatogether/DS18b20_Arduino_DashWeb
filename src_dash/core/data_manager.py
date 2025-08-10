@@ -39,9 +39,15 @@ def create_snapshot_function(arduino: Any, arduino_connected_ref: Dict[str, bool
         """Collect current data snapshot from Arduino or simulation."""
         arduino_connected = arduino_connected_ref.get("connected", False)
 
+        # 연결 상태 실시간 검증
         if arduino_connected and not arduino.is_healthy():
             arduino_connected_ref["connected"] = False
             print("⚠️ Arduino 연결 상태 불량 감지 - 시뮬레이션 모드 전환")
+        elif not arduino_connected and arduino.is_healthy():
+            # 연결 상태가 False인데 실제로는 건강한 경우 (연결 상태 동기화)
+            arduino_connected_ref["connected"] = True
+            print("✅ Arduino 연결 상태 복구 감지 - 실제 데이터 모드 전환")
+            arduino_connected = True
 
         if arduino_connected and arduino.is_healthy():
             stats = arduino.get_connection_stats()

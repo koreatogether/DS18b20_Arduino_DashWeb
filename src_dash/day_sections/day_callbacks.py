@@ -40,15 +40,22 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
                 if arduino.connect():
                     if arduino.start_reading():
                         print("✅ Day 모드 수동 재연결 성공!")
+                        # 🔥 핵심 수정: 연결 상태를 True로 업데이트
+                        arduino_connected_ref["connected"] = True
+                        print("🔄 시뮬레이션 모드 → 실제 데이터 모드 전환 완료!")
                         return "✅ 재연결 성공"
                     else:
                         arduino.disconnect()
+                        arduino_connected_ref["connected"] = False
                         return "❌ 데이터 읽기 실패"
                 else:
+                    arduino_connected_ref["connected"] = False
                     return "❌ 연결 실패"
             except PermissionError:
+                arduino_connected_ref["connected"] = False
                 return "❌ 포트 접근 거부"
             except (OSError, AttributeError, ValueError) as e:
+                arduino_connected_ref["connected"] = False
                 return f"❌ 오류: {str(e)[:15]}..."
         return "Arduino 재연결"
 
@@ -78,8 +85,6 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
     )
     def refresh_port_options(_n, current_value):
         try:
-            pass
-
             try:
                 from serial.tools import list_ports
             except ImportError:
@@ -87,19 +92,42 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
 
             options = []
             default_val = None
+
+            # 🔥 핵심 수정: 현재 Arduino가 연결된 포트 확인
+            current_arduino_port = None
+            if arduino and hasattr(arduino, "port") and arduino.is_healthy():
+                current_arduino_port = arduino.port
+                print(f"🔍 [PORT_REFRESH] 현재 Arduino 연결 포트: {current_arduino_port}")
+
             if list_ports is not None:
                 ports = list(list_ports.comports())
                 for p in ports:
                     label = f"{p.device} - {p.description}"
                     options.append({"label": label, "value": p.device})
                 if ports:
-                    default_val = ports[0].device
+                    # 🔥 핵심 수정: 현재 연결된 포트를 우선적으로 기본값으로 설정
+                    if current_arduino_port and current_arduino_port in [p.device for p in ports]:
+                        default_val = current_arduino_port
+                        print(f"🎯 [PORT_REFRESH] 연결된 포트를 기본값으로 설정: {default_val}")
+                    else:
+                        default_val = ports[0].device
+                        print(f"🔍 [PORT_REFRESH] 첫 번째 포트를 기본값으로 설정: {default_val}")
+
             if not options:
                 options = [{"label": f"COM{i}", "value": f"COM{i}"} for i in range(1, 11)]
-                default_val = "COM4"
+                # 연결된 포트가 있으면 그것을 기본값으로, 없으면 COM4
+                default_val = current_arduino_port if current_arduino_port else "COM4"
 
             values_set = {o["value"] for o in options}
-            value = current_value if current_value in values_set else default_val
+
+            # 🔥 핵심 수정: 현재 연결된 포트가 있으면 그것을 우선 선택
+            if current_arduino_port and current_arduino_port in values_set:
+                value = current_arduino_port
+                print(f"✅ [PORT_REFRESH] 드롭다운을 연결된 포트로 설정: {value}")
+            else:
+                value = current_value if current_value in values_set else default_val
+                print(f"🔄 [PORT_REFRESH] 드롭다운을 기본값으로 설정: {value}")
+
             return options, value
         except (ImportError, AttributeError, OSError):
             return dash.no_update, dash.no_update
@@ -125,9 +153,20 @@ def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DE
             if arduino.connect():
                 if arduino.start_reading():
                     print(f"✅ Day 모드 Arduino 연결 성공: {selected}")
+                    # 🔥 핵심 수정: 연결 상태를 True로 업데이트
+                    arduino_connected_ref["connected"] = True
+                    print("🔄 시뮬레이션 모드 → 실제 데이터 모드 전환 완료!")
                     return f"✅ 연결됨: {selected}"
+                else:
+                    # 연결은 성공했지만 데이터 읽기 실패 시
+                    arduino.disconnect()
+                    arduino_connected_ref["connected"] = False
+            # 연결 실패 시 시뮬레이션 모드 유지
+            arduino_connected_ref["connected"] = False
             return "❌ 연결 실패"
         except (OSError, AttributeError, ValueError) as e:
+            # 오류 발생 시 시뮬레이션 모드 유지
+            arduino_connected_ref["connected"] = False
             return f"❌ 오류: {str(e)[:20]}..."
 
     @app.callback(

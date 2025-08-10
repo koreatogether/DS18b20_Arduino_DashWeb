@@ -42,10 +42,20 @@ def register_night_callbacks(
             if attempt_arduino_connection(arduino, selected):
                 if attempt_data_reading(arduino):
                     print(f"✅ Night 모드 Arduino 연결 성공: {selected}")
+                    # 🔥 핵심 수정: 연결 상태를 True로 업데이트
+                    arduino_connected_ref["connected"] = True
+                    print("🔄 시뮬레이션 모드 → 실제 데이터 모드 전환 완료!")
                     return f"✅ 연결됨: {selected}"
+                else:
+                    # 데이터 읽기 실패 시
+                    arduino_connected_ref["connected"] = False
 
+            # 연결 실패 시 시뮬레이션 모드 유지
+            arduino_connected_ref["connected"] = False
             return "❌ 연결 실패"
         except (OSError, AttributeError, ValueError) as e:
+            # 오류 발생 시 시뮬레이션 모드 유지
+            arduino_connected_ref["connected"] = False
             return f"❌ 오류: {str(e)[:20]}..."
 
     @app.callback(Output("reconnect-btn-v2", "children"), Input("reconnect-btn-v2", "n_clicks"))
@@ -70,16 +80,23 @@ def register_night_callbacks(
             if attempt_arduino_connection(arduino, None):
                 if attempt_data_reading(arduino):
                     print("✅ Night 모드 수동 재연결 성공!")
+                    # 🔥 핵심 수정: 연결 상태를 True로 업데이트
+                    arduino_connected_ref["connected"] = True
+                    print("🔄 시뮬레이션 모드 → 실제 데이터 모드 전환 완료!")
                     return "✅ 재연결 성공"
                 else:
                     arduino.disconnect()
+                    arduino_connected_ref["connected"] = False
                     return "❌ 데이터 읽기 실패"
             else:
+                arduino_connected_ref["connected"] = False
                 return "❌ 연결 실패"
 
         except PermissionError:
+            arduino_connected_ref["connected"] = False
             return "❌ 포트 접근 거부"
         except (OSError, AttributeError, ValueError) as e:
+            arduino_connected_ref["connected"] = False
             return f"❌ 오류: {str(e)[:15]}..."
 
     @app.callback(
@@ -130,16 +147,22 @@ def register_night_callbacks(
     # V2 포트 드롭다운 콜백
     @app.callback(
         [Output("port-dropdown-v2", "options"), Output("port-dropdown-v2", "value")],
-        [Input("ui-version-store", "data")],
+        [Input("ui-version-store", "data"), Input("interval-component", "n_intervals")],
         [State("port-dropdown-v2", "value")],
         prevent_initial_call=True,
     )
-    def unified_refresh_v2_ports(ui_version, current_value):
+    def unified_refresh_v2_ports(ui_version, _n, current_value):
         """V2 포트 드롭다운을 새로고침합니다."""
         if not UIMode.is_night(ui_version):
             return dash.no_update, dash.no_update
 
         try:
+            # 🔥 핵심 수정: 현재 Arduino가 연결된 포트 확인
+            current_arduino_port = None
+            if arduino and hasattr(arduino, "port") and arduino.is_healthy():
+                current_arduino_port = arduino.port
+                print(f"🔍 [PORT_REFRESH_V2] 현재 Arduino 연결 포트: {current_arduino_port}")
+
             # 포트 옵션 가져오기
             options, default_val = get_port_options_safely()
 
@@ -147,9 +170,23 @@ def register_night_callbacks(
             if not options:
                 options, default_val = create_fallback_port_options()
 
+            # 🔥 핵심 수정: 현재 연결된 포트가 있으면 그것을 우선적으로 기본값으로 설정
+            if current_arduino_port:
+                values_set = {o["value"] for o in options}
+                if current_arduino_port in values_set:
+                    default_val = current_arduino_port
+                    print(f"🎯 [PORT_REFRESH_V2] 연결된 포트를 기본값으로 설정: {default_val}")
+
             # 현재 선택된 값이 유효한지 확인
             values_set = {o["value"] for o in options}
-            value = current_value if current_value in values_set else default_val
+
+            # 🔥 핵심 수정: 현재 연결된 포트가 있으면 그것을 우선 선택
+            if current_arduino_port and current_arduino_port in values_set:
+                value = current_arduino_port
+                print(f"✅ [PORT_REFRESH_V2] 드롭다운을 연결된 포트로 설정: {value}")
+            else:
+                value = current_value if current_value in values_set else default_val
+                print(f"🔄 [PORT_REFRESH_V2] 드롭다운을 기본값으로 설정: {value}")
 
             return options, value
         except (ImportError, AttributeError, OSError):
