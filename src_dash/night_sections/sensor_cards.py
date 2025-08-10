@@ -102,10 +102,10 @@ def create_sensor_cards_with_buttons(TH_DEFAULT=55.0, TL_DEFAULT=-25.0):
                             "----:----:----:----",
                             id=f"sensor-{i}-address",
                             style={
-                                "fontSize": "9px",
+                                "fontSize": "13px",
                                 "color": "#999",
                                 "textAlign": "center",
-                                "marginTop": "3px",
+                                "marginTop": "16px",
                                 "fontFamily": "monospace",
                                 "lineHeight": "1.2",
                             },

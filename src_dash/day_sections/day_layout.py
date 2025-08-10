@@ -93,9 +93,9 @@ def create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE):
                                                 id=f"sensor-{i}-address",
                                                 children="주소: ----:----:----:----",
                                                 style={
-                                                    "fontSize": "10px",
+                                                    "fontSize": "13px",
                                                     "color": "#999",
-                                                    "marginTop": "3px",
+                                                    "marginTop": "16px",
                                                     "fontFamily": "monospace",
                                                 },
                                             ),
