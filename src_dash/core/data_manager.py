@@ -78,6 +78,7 @@ def create_snapshot_function(arduino: Any, arduino_connected_ref: Dict[str, bool
                 i: {
                     "temperature": round(20 + random.uniform(-5, 15), 1),
                     "status": "simulated",
+                    "address": f"28FF{i:02d}1E{i:02d}16{i:02d}3C",  # 시뮬레이션용 더미 주소
                 }
                 for i in range(1, 5)
             }

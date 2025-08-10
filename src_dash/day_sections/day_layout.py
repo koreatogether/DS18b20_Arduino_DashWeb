@@ -89,6 +89,16 @@ def create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE):
                                                     "color": "#666",
                                                 },
                                             ),
+                                            html.Div(
+                                                id=f"sensor-{i}-address",
+                                                children="주소: ----:----:----:----",
+                                                style={
+                                                    "fontSize": "10px",
+                                                    "color": "#999",
+                                                    "marginTop": "3px",
+                                                    "fontFamily": "monospace",
+                                                },
+                                            ),
                                         ],
                                         style={
                                             "display": "inline-block",

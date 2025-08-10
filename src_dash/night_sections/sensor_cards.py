@@ -88,6 +88,28 @@ def create_sensor_cards_with_buttons(TH_DEFAULT=55.0, TL_DEFAULT=-25.0):
                                 "textAlign": "center",
                             },
                         ),
+                        html.Div(
+                            "정상",
+                            id=f"sensor-{i}-status",
+                            style={
+                                "fontSize": "12px",
+                                "color": "#4CAF50",
+                                "textAlign": "center",
+                                "marginTop": "2px",
+                            },
+                        ),
+                        html.Div(
+                            "----:----:----:----",
+                            id=f"sensor-{i}-address",
+                            style={
+                                "fontSize": "9px",
+                                "color": "#999",
+                                "textAlign": "center",
+                                "marginTop": "3px",
+                                "fontFamily": "monospace",
+                                "lineHeight": "1.2",
+                            },
+                        ),
                     ],
                     style={
                         "flex": "0 1 120px",

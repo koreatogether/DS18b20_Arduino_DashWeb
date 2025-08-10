@@ -13,6 +13,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
         [Output("connection-status", "children"), Output("connection-status", "style")]
         + [Output(f"sensor-{i}-temp", "children") for i in range(1, 9)]
         + [Output(f"sensor-{i}-status", "children") for i in range(1, 9)]
+        + [Output(f"sensor-{i}-address", "children") for i in range(1, 9)]
         + [Output("system-log", "children")],
         Input("interval-component", "n_intervals"),
         State("ui-version-store", "data"),
@@ -26,7 +27,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
             _latest_data,
             system_messages,
         ) = snapshot_func()
-        sensor_temps, sensor_statuses = [], []
+        sensor_temps, sensor_statuses, sensor_addresses = [], [], []
 
         for i in range(1, 9):
             if i in current_temps:
@@ -39,9 +40,27 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                     sensor_statuses.append("🟡 시뮬레이션")
                 else:
                     sensor_statuses.append(f"⚠️ {status}")
+
+                # 🔥 센서 주소 추가 (시뮬레이션용 더미 주소)
+                address = info.get("address", "")
+                if address:
+                    # 실제 주소가 있는 경우 (예: "28FF641E8016043C")
+                    formatted_address = f"{address[:4]}:{address[4:8]}:" f"{address[8:12]}:{address[12:16]}"
+                    sensor_addresses.append(formatted_address)
+                elif status == "simulated":
+                    # 시뮬레이션 모드용 더미 주소
+                    dummy_address = f"28FF{i:02d}1E{i:02d}16{i:02d}3C"
+                    formatted_address = (
+                        f"{dummy_address[:4]}:{dummy_address[4:8]}:"
+                        f"{dummy_address[8:12]}:{dummy_address[12:16]}"
+                    )
+                    sensor_addresses.append(formatted_address)
+                else:
+                    sensor_addresses.append("----:----:----:----")
             else:
                 sensor_temps.append("--°C")
                 sensor_statuses.append("🔴 연결 없음")
+                sensor_addresses.append("----:----:----:----")
 
         log_entries = []
         for msg in system_messages:
@@ -50,7 +69,13 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
             icon = level_icons.get(msg["level"], "📝")
             log_entries.append(html.Div(f"[{ts}] {icon} {msg['message']}"))
 
-        return [connection_status, connection_style] + sensor_temps + sensor_statuses + [log_entries]
+        return (
+            [connection_status, connection_style]
+            + sensor_temps
+            + sensor_statuses
+            + sensor_addresses
+            + [log_entries]
+        )
 
     @app.callback(
         [Output("temp-graph", "figure"), Output("detail-sensor-graph", "figure")],

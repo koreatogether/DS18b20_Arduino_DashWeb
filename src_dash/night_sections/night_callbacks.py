@@ -1,7 +1,6 @@
 """Night Mode (v2) 콜백 함수들"""
 
 import dash
-import pandas as pd
 from core.ui_modes import UIMode
 from dash import Input, Output, State, html
 
@@ -235,35 +234,92 @@ def register_night_callbacks(
 
         return figures
 
-    # 별도 온도 표시 업데이트 콜백
+    # Night 모드 센서 상태 및 주소 업데이트 콜백
+    @app.callback(
+        [Output(f"sensor-{i}-temp", "children", allow_duplicate=True) for i in range(1, 9)]
+        + [Output(f"sensor-{i}-status", "children", allow_duplicate=True) for i in range(1, 9)]
+        + [Output(f"sensor-{i}-address", "children", allow_duplicate=True) for i in range(1, 9)],
+        Input("interval-component", "n_intervals"),
+        State("ui-version-store", "data"),
+        prevent_initial_call=True,
+    )
+    def update_v2_sensor_displays(_n, ui_version):
+        if not UIMode.is_night(ui_version):
+            return [dash.no_update] * 24  # 8센서 x 3개 출력 = 24개
+
+        _, _, current_temps, latest_data, _msgs = _snapshot()
+
+        # 메인 온도 표시 (큰 글씨)
+        main_temps = []
+        # 상태 표시
+        statuses = []
+        # 주소 표시
+        addresses = []
+
+        for sid in range(1, 9):
+            if sid in current_temps:
+                info = current_temps[sid]
+                temp = info["temperature"]
+                status = info.get("status", "")
+
+                # 메인 온도 표시
+                main_temps.append(f"{temp:.1f}°C")
+
+                # 상태 표시
+                if status == "ok":
+                    statuses.append("정상")
+                elif status == "simulated":
+                    statuses.append("시뮬레이션")
+                else:
+                    statuses.append("연결 없음")
+
+                # 주소 표시
+                address = info.get("address", "")
+                if address:
+                    # 실제 주소가 있는 경우
+                    formatted_address = f"{address[:4]}:{address[4:8]}:" f"{address[8:12]}:{address[12:16]}"
+                    addresses.append(formatted_address)
+                elif status == "simulated":
+                    # 시뮬레이션 모드용 더미 주소
+                    dummy_address = f"28FF{sid:02d}1E{sid:02d}16{sid:02d}3C"
+                    formatted_address = (
+                        f"{dummy_address[:4]}:{dummy_address[4:8]}:"
+                        f"{dummy_address[8:12]}:{dummy_address[12:16]}"
+                    )
+                    addresses.append(formatted_address)
+                else:
+                    addresses.append("----:----:----:----")
+
+            else:
+                main_temps.append("--°C")
+                statuses.append("연결 없음")
+                addresses.append("----:----:----:----")
+
+        return main_temps + statuses + addresses
+
+    # Night 모드 전용 현재 온도 표시 콜백 (우측 패널용)
     @app.callback(
         [Output(f"sensor-{i}-current-temp", "children") for i in range(1, 9)],
         Input("interval-component", "n_intervals"),
         State("ui-version-store", "data"),
         prevent_initial_call=True,
     )
-    def update_v2_temp_displays(_n, ui_version):
+    def update_v2_current_temp_displays(_n, ui_version):
         if not UIMode.is_night(ui_version):
             return [dash.no_update] * 8
+
         _, _, current_temps, latest_data, _msgs = _snapshot()
-        temp_displays = []
+        current_temp_displays = []
+
         for sid in range(1, 9):
-            if latest_data:
-                try:
-                    df = pd.DataFrame(latest_data)
-                    df["sensor_id"] = df["sensor_id"].astype(int)
-                    sub = df[df["sensor_id"] == sid]
-                    if not sub.empty:
-                        temperature_series = pd.Series(sub["temperature"])
-                        latest_temp = temperature_series.iloc[-1]
-                        temp_displays.append(f"{latest_temp:.1f}°C")
-                    else:
-                        temp_displays.append("--°C")
-                except (KeyError, IndexError, ValueError):
-                    temp_displays.append("--°C")
+            if sid in current_temps:
+                info = current_temps[sid]
+                temp = info["temperature"]
+                current_temp_displays.append(f"{temp:.1f}°C")
             else:
-                temp_displays.append("--°C")
-        return temp_displays
+                current_temp_displays.append("--°C")
+
+        return current_temp_displays
 
     # 모달 관련 콜백들
     def _format_interval(ms: int) -> str:

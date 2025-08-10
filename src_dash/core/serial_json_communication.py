@@ -138,6 +138,11 @@ class ArduinoSerial:
         self.read_thread = threading.Thread(target=self._read_loop, daemon=True)
         self.read_thread.start()
 
+        # 🔥 센서 주소 정보를 얻기 위해 SCAN_SENSORS 명령 전송
+        time.sleep(1)  # Arduino 초기화 대기
+        self.send_text_command("SCAN_SENSORS")
+        self.logger.info("📍 센서 주소 스캔 명령 전송")
+
         self.logger.info("📡 데이터 읽기 시작")
         return True
 
@@ -276,19 +281,64 @@ class ArduinoSerial:
                 }
                 self.system_messages.append(record)
 
+                # 🔥 센서 주소 정보 파싱 추가
+                message = record["message"]
+                if message.startswith("SENSOR_") and "_ADDRESS_" in message:
+                    try:
+                        # "SENSOR_1_ADDRESS_28:FF:64:1E:80:16:04:3C" 형식 파싱
+                        parts_addr = message.split("_ADDRESS_")
+                        if len(parts_addr) == 2:
+                            sensor_part = parts_addr[0]  # "SENSOR_1"
+                            address_part = parts_addr[1]  # "28:FF:64:1E:80:16:04:3C"
+
+                            sensor_id = int(sensor_part.split("_")[1])  # 1
+
+                            # 센서 주소 정보 저장
+                            if not hasattr(self, "sensor_addresses"):
+                                self.sensor_addresses = {}
+                            self.sensor_addresses[sensor_id] = address_part
+
+                            self.logger.info(f"📍 센서 주소 저장: ID={sensor_id}, 주소={address_part}")
+                    except (ValueError, IndexError) as e:
+                        self.logger.warning(f"센서 주소 파싱 오류: {e}")
+
+    def get_sensor_addresses(self):
+        """센서 주소 정보 반환"""
+        if hasattr(self, "sensor_addresses"):
+            return self.sensor_addresses.copy()
+        return {}
+
     def get_current_temperatures(self):
-        """현재 온도 데이터 반환"""
+        """현재 온도 데이터 반환 (주소 정보 포함)"""
         with self.data_lock:
             current_temps = {}
+            # 🔍 디버그: 센서 주소 정보 확인
+            if hasattr(self, "sensor_addresses"):
+                self.logger.info(f"🔍 저장된 센서 주소: {self.sensor_addresses}")
+            else:
+                self.logger.info("🔍 센서 주소 정보 없음")
+            
             # 최신 데이터부터 역순으로 검사
             for data in reversed(self.sensor_data):
                 sensor_id = data["sensor_id"]
                 if sensor_id not in current_temps:
-                    current_temps[sensor_id] = {
+                    temp_info = {
                         "temperature": data["temperature"],
                         "timestamp": data["timestamp"],
                         "status": data["status"],
                     }
+
+                    # 🔥 센서 주소 정보 추가
+                    if hasattr(self, "sensor_addresses") and sensor_id in self.sensor_addresses:
+                        # 콜론 제거하여 16자리 16진수 문자열로 변환
+                        address_with_colons = self.sensor_addresses[sensor_id]
+                        address_clean = address_with_colons.replace(":", "")
+                        temp_info["address"] = address_clean
+                        self.logger.info(f"🔍 센서 {sensor_id} 주소 추가: {address_clean}")
+                    else:
+                        self.logger.info(f"🔍 센서 {sensor_id} 주소 없음")
+
+                    current_temps[sensor_id] = temp_info
             return current_temps
 
     def get_latest_sensor_data(self, count=50):
