@@ -15,11 +15,8 @@ logs/**
 # PlatformIO
 .pio/
 .vscode/
-# .github/workflows/main.yml만 추적 예외로 허용
-.github/
-.github/*
-.github/**
-!.github/workflows/main.yml
+# GitHub Actions: .github 폴더 전부 추적 (workflows 포함)
+# (주: 아래 전역 root ignore 블록 예외 목록에 !.github/ 및 !.github/** 존재)
 # build/ 폴더는 빌드 산출물 보존을 위해 무시하지 않음
 # build/
 libdeps/
@@ -84,12 +81,16 @@ tools/
 tools/*
 tools/**
 !.github/
+!.github/**
+!.github/workflows/
+!.github/workflows/*.yml
 !.vscode/
 !.kiro/
 
 
-#Ignore insiders AI rules
-.github\copilot-instructions.md
+# GitHub Actions 활성화 - .github 폴더 전체 추적
+# 특정 비공개 AI 지침 문서만 제외 (필요 시 추적하려면 아래 라인 주석 처리)
+.github/copilot-instructions.md
 
 
 # PlatformIO

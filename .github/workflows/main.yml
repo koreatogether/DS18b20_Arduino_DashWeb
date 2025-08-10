@@ -1,0 +1,85 @@
+name: PlatformIO CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+
+      - name: Build (uno_r4_wifi) with log
+        run: |
+          mkdir -p logs/comfile
+          pio run -e uno_r4_wifi -v 2>&1 | tee logs/comfile/compile_results.txt
+
+      - name: Run native unit tests with log
+        run: |
+          mkdir -p test/logs
+          pio test -e native -v 2>&1 | tee test/logs/test_results_clean.txt
+
+      - name: Run time acceleration tests with log
+        run: |
+          mkdir -p test/logs
+          pio test -e test -v 2>&1 | tee test/logs/time_acceleration_results.txt
+
+      - name: Show firmware size
+        run: pio run -e uno_r4_wifi --target size
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: |
+            .pio/build/uno_r4_wifi/*.elf
+            .pio/build/uno_r4_wifi/*.bin
+            .pio/build/uno_r4_wifi/*.hex
+            build/uno_r4_wifi/*.elf
+            build/uno_r4_wifi/*.bin
+            build/uno_r4_wifi/*.hex
+
+      - name: Upload build/test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: |
+            logs/comfile/compile_results.txt
+            test/logs/test_results_clean.txt
+
+
+      - name: Run cppcheck (static analysis)
+        run: |
+          pip install cppcheck
+          cppcheck --enable=all --inconclusive --std=c++17 --quiet --suppress=missingIncludeSystem src/
+
+
+      - name: Run code quality metrics analysis
+        run: |
+          python tools/quality_metrics/code_metrics.py
+
+      - name: Upload quality metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-metrics
+          path: |
+            logs/quality/*.json
+            logs/quality/*.md
