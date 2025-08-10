@@ -1,5 +1,6 @@
 """Night Mode (v2) 콜백 함수들"""
 import dash
+from core.ui_modes import UIMode
 from dash import Input, Output, State, dcc, html
 import plotly.graph_objects as go
 import pandas as pd
@@ -111,7 +112,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
         prevent_initial_call=True
     )
     def update_system_log_v2(_n, ui_version):
-        if ui_version != 'v2':
+        if not UIMode.is_night(ui_version):
             return dash.no_update
         _, _, _current_temps, _latest_data, system_messages = _snapshot()
         log_entries = []
@@ -132,7 +133,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
     )
     def unified_refresh_v2_ports(ui_version, current_value):
         """V2 포트 드롭다운을 새로고침합니다."""
-        if ui_version != 'v2':
+        if not UIMode.is_night(ui_version):
             return dash.no_update, dash.no_update
             
         try:
@@ -160,7 +161,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
     )
     def update_v2_mini_graphs(_n, ui_version):
         """V2 미니 그래프들을 업데이트합니다."""
-        if ui_version != 'v2':
+        if not UIMode.is_night(ui_version):
             return [dash.no_update]*8
             
         _, _, _current_temps, latest_data, _msgs = _snapshot()
@@ -204,7 +205,7 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
         prevent_initial_call=True
     )
     def update_v2_temp_displays(_n, ui_version):
-        if ui_version != 'v2':
+        if not UIMode.is_night(ui_version):
             return [dash.no_update]*8
         _, _, current_temps, latest_data, _msgs = _snapshot()
         temp_displays = []
@@ -310,3 +311,23 @@ def register_night_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_
             ms = (intervals_map or {}).get(str(i), 1000)
             labels.append(f"측정주기 변경 (현재 {_format_interval(ms)})")
         return labels
+    
+    # 전체 선택/해제 버튼 콜백 (sensor-line-toggle)
+    @app.callback(
+        Output('sensor-line-toggle', 'value'),
+        [Input('btn-select-all', 'n_clicks'), Input('btn-deselect-all', 'n_clicks')],
+        [State('sensor-line-toggle', 'value')],
+        prevent_initial_call=True
+    )
+    def select_deselect_all(select_clicks, deselect_clicks, current_values):
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            raise dash.exceptions.PreventUpdate
+        btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        # 센서 ID 리스트 상수
+        all_sensors = [i for i in range(1, 9)]
+        if btn_id == 'btn-select-all':
+            return all_sensors
+        if btn_id == 'btn-deselect-all':
+            return []
+        return dash.no_update

@@ -1,5 +1,6 @@
 """앱 레이아웃 및 검증 레이아웃 관리"""
 from dash import html, dcc
+from .ui_modes import UIMode
 
 
 def create_main_layout(initial_port_options, selected_port, initial_port_value, create_layout_v1):
@@ -73,7 +74,7 @@ def create_main_layout(initial_port_options, selected_port, initial_port_value, 
             'color': '#28a745',
             'marginBottom': '8px'
         }),
-        dcc.Store(id='ui-version-store', data='v1'),
+    dcc.Store(id='ui-version-store', data=UIMode.DAY.value),
         html.Div(id='main-content', children=create_layout_v1(initial_port_options, selected_port, initial_port_value)),
         # Common components that should always be present
         dcc.Interval(

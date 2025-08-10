@@ -49,10 +49,10 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
     @app.callback(
         [Output('temp-graph','figure'), Output('detail-sensor-graph','figure')],
         [Input('interval-component','n_intervals'), Input('detail-sensor-dropdown','value')],
-        [State('threshold-store','data'), State('ui-version-store','data')], 
+        [State('ui-version-store','data')], 
         prevent_initial_call=True
     )
-    def update_main_graphs(_n, detail_sensor_id, threshold_map, ui_version):
+    def update_main_graphs(_n, detail_sensor_id, ui_version):
         if detail_sensor_id is None: 
             detail_sensor_id = 1
         _, _, _current_temps, latest_data, _msgs = snapshot_func()
@@ -60,19 +60,31 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
         # Temp overview graph
         if latest_data:
             df = pd.DataFrame(latest_data)
-            try:
-                df['timestamp'] = pd.to_datetime(df['timestamp'])
-                df['sensor_id'] = df['sensor_id'].astype(str)
-            except (ValueError, KeyError, TypeError): 
-                pass
-            try:
-                fig = px.line(df, x='timestamp', y='temperature', color='sensor_id',
-                              title='실시간 온도 모니터링 (최근 50개 데이터)', template='plotly_white')
-            except (ValueError, KeyError, TypeError):
+            # 필수 컬럼 존재 확인
+            required_cols = {'timestamp', 'sensor_id', 'temperature'}
+            if required_cols.issubset(df.columns):
+                # 변환 시도 (실패해도 치명적 아님)
+                if 'timestamp' in df.columns:
+                    try:
+                        df['timestamp'] = pd.to_datetime(df['timestamp'])
+                    except Exception:
+                        pass
+                if 'sensor_id' in df.columns:
+                    try:
+                        df['sensor_id'] = df['sensor_id'].astype(str)
+                    except Exception:
+                        pass
+                try:
+                    fig = px.line(df, x='timestamp', y='temperature', color='sensor_id',
+                                  title='실시간 온도 모니터링 (최근 50개 데이터)', template='plotly_white')
+                except Exception:
+                    fig = go.Figure()
+                    for sid, g in df.groupby('sensor_id'):
+                        fig.add_trace(go.Scatter(x=g.get('timestamp'), y=g.get('temperature'), mode='lines', name=sid))
+                    fig.update_layout(title='실시간 온도 모니터링 (최근 50개 데이터)', template='plotly_white')
+            else:
                 fig = go.Figure()
-                for sid, g in df.groupby('sensor_id'):
-                    fig.add_trace(go.Scatter(x=g['timestamp'], y=g['temperature'], mode='lines', name=sid))
-                fig.update_layout(title='실시간 온도 모니터링 (최근 50개 데이터)', template='plotly_white')
+                fig.update_layout(title='데이터 (형식 오류)', template='plotly_white')
         else:
             fig = go.Figure()
             fig.update_layout(title='데이터 없음', template='plotly_white')
@@ -89,23 +101,30 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
         # Detail graph
         if latest_data:
             df_all = pd.DataFrame(latest_data)
-            try:
-                df_all['timestamp'] = pd.to_datetime(df_all['timestamp'])
-                df_all['sensor_id'] = df_all['sensor_id'].astype(int)
-            except (ValueError, KeyError, TypeError): 
-                pass
-            one = df_all[df_all['sensor_id']==detail_sensor_id]
-            if not one.empty:
+            if {'timestamp','sensor_id','temperature'}.issubset(df_all.columns):
                 try:
-                    detail_fig = px.line(one, x='timestamp', y='temperature', 
-                                       title=f'센서 {detail_sensor_id} 상세 그래프', template='plotly_white')
-                except (ValueError, KeyError, TypeError):
+                    df_all['timestamp'] = pd.to_datetime(df_all['timestamp'])
+                except Exception:
+                    pass
+                try:
+                    df_all['sensor_id'] = df_all['sensor_id'].astype(int)
+                except Exception:
+                    pass
+                one = df_all[df_all['sensor_id']==detail_sensor_id]
+                if not one.empty:
+                    try:
+                        detail_fig = px.line(one, x='timestamp', y='temperature', 
+                                           title=f'센서 {detail_sensor_id} 상세 그래프', template='plotly_white')
+                    except Exception:
+                        detail_fig = go.Figure()
+                        detail_fig.add_trace(go.Scatter(x=one.get('timestamp'), y=one.get('temperature'), 
+                                                      mode='lines', name=f'센서 {detail_sensor_id}'))
+                else:
                     detail_fig = go.Figure()
-                    detail_fig.add_trace(go.Scatter(x=one['timestamp'], y=one['temperature'], 
-                                                  mode='lines', name=f'센서 {detail_sensor_id}'))
+                    detail_fig.update_layout(title=f'센서 {detail_sensor_id} 데이터 없음', template='plotly_white')
             else:
                 detail_fig = go.Figure()
-                detail_fig.update_layout(title=f'센서 {detail_sensor_id} 데이터 없음', template='plotly_white')
+                detail_fig.update_layout(title='상세 데이터 (형식 오류)', template='plotly_white')
         else:
             detail_fig = go.Figure()
             detail_fig.update_layout(title='상세 데이터 없음', template='plotly_white')
@@ -127,40 +146,49 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
         prevent_initial_call=True
     )
     def update_combined_graph(_n, selected_sensor_lines, ui_version):
+        from .ui_modes import UIMode
+        ui_is_night = UIMode.is_night(ui_version)
         # 선택된 센서가 없으면 빈 그래프 반환 (임계선/센서라인 모두 제거)
-        if not isinstance(selected_sensor_lines, list) or len(selected_sensor_lines) == 0:
+        if not selected_sensor_lines:
             empty_fig = go.Figure()
             empty_fig.update_layout(
                 title='전체 센서 실시간 온도 (센서 선택 없음)',
-                template='plotly_dark' if ui_version=='v2' else 'plotly_white',
-                height=560 if ui_version=='v2' else 480,
+                template='plotly_dark' if ui_is_night else 'plotly_white',
+                height=560 if ui_is_night else 480,
                 showlegend=False,
-                plot_bgcolor='#000' if ui_version=='v2' else None,
-                paper_bgcolor='#000' if ui_version=='v2' else None
+                plot_bgcolor='#000' if ui_is_night else None,
+                paper_bgcolor='#000' if ui_is_night else None
             )
             return empty_fig
         _, _, _current_temps, latest_data, _msgs = snapshot_func()
+        # 선택된 센서 ID를 정수 리스트로 변환
+        try:
+            selected_ids = [int(s) for s in selected_sensor_lines]
+        except Exception:
+            selected_ids = []
         
         if latest_data:
-            try:
-                df = pd.DataFrame(latest_data)
-                df['sensor_id'] = df['sensor_id'].astype(int)
-                # 시간 포맷을 시:분:초로만 보여주기 위해 datetime 변환
+            df = pd.DataFrame(latest_data)
+            if {'timestamp','sensor_id','temperature'}.issubset(df.columns):
+                # 타입 변환 (best-effort)
+                try:
+                    df['sensor_id'] = df['sensor_id'].astype(int)
+                except Exception:
+                    pass
                 try:
                     df['timestamp'] = pd.to_datetime(df['timestamp'])
-                except (ValueError, KeyError, TypeError):
+                except Exception:
                     pass
-                df = df[df['sensor_id'].isin(selected_sensor_lines)]
+                df = df[df['sensor_id'].isin(selected_ids)]
                 fig = go.Figure()
-                color_map = {int(sid): COLOR_SEQ[(sid-1)%len(COLOR_SEQ)] for sid in range(1,9)}
+                color_map = {i: COLOR_SEQ[(i-1) % len(COLOR_SEQ)] for i in range(1, 9)}
                 for sid, g in df.groupby('sensor_id'):
-                    if int(sid) in selected_sensor_lines:
+                    if sid in selected_ids:
                         fig.add_trace(go.Scatter(
-                            x=g['timestamp'], y=g['temperature'], mode='lines', name=f'센서 {sid}',
-                            line=dict(color=color_map.get(int(sid),'#888'), width=2)
+                            x=g.get('timestamp'), y=g.get('temperature'), mode='lines', name=f'센서 {sid}',
+                            line=dict(color=color_map.get(int(sid), '#888'), width=2)  # type: ignore[arg-type]
                         ))
-                # 레이아웃 (임계선 표시 제거: 복잡도 감소)
-                if ui_version == 'v2':
+                if ui_is_night:
                     fig.update_layout(
                         title='전체 센서 실시간 온도', template='plotly_dark', height=560,
                         showlegend=False, plot_bgcolor='#000', paper_bgcolor='#000'
@@ -171,21 +199,21 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                         title='전체 센서 실시간 온도', template='plotly_white', height=480,
                         showlegend=False
                     )
-            except (ValueError, KeyError, TypeError):
+            else:
                 fig = go.Figure()
-                fig.update_layout(title='전체 센서 실시간 온도 (오류)', height=480, 
-                                template='plotly_dark' if ui_version=='v2' else 'plotly_white')
+                fig.update_layout(title='전체 센서 실시간 온도 (형식 오류)', height=480,
+                                  template='plotly_dark' if ui_is_night else 'plotly_white')
         else:
             fig = go.Figure()
             fig.update_layout(
                 title='전체 센서 실시간 온도 (데이터 없음)',
-                height=560 if ui_version=='v2' else 480,
-                template='plotly_dark' if ui_version=='v2' else 'plotly_white',
+                height=560 if ui_is_night else 480,
+                template='plotly_dark' if ui_is_night else 'plotly_white',
                 showlegend=False,
-                plot_bgcolor='#000' if ui_version=='v2' else None,
-                paper_bgcolor='#000' if ui_version=='v2' else None
+                plot_bgcolor='#000' if ui_is_night else None,
+                paper_bgcolor='#000' if ui_is_night else None
             )
-            if ui_version=='v2':
+            if ui_is_night:
                 fig.update_xaxes(tickformat="%H:%M:%S")
         return fig
 

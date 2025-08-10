@@ -1,12 +1,41 @@
 """데이터 스냅샷 및 시뮬레이션 관리 모듈"""
 import datetime
 import random
+from typing import Callable, Dict, Any, List, Tuple
+
+# Number of latest sensor data records to retrieve
+SNAPSHOT_SIZE = 50
+from typing import Callable, Dict, Any, List, Tuple
 
 
-def create_snapshot_function(arduino, arduino_connected_ref):
-    """스냅샷 함수를 생성합니다."""
+def create_snapshot_function(
+    arduino: Any,
+    arduino_connected_ref: Dict[str, bool]
+) -> Callable[[], Tuple[
+    str,
+    Dict[str, Any],
+    Dict[int, Dict[str, Any]],
+    List[Dict[str, Any]],
+    List[Dict[str, Any]]
+]]:
+    """스냅샷 함수를 생성합니다.
+    Returns:
+        Callable that returns a tuple of (
+            connection_status: str,
+            connection_style: Dict[str, Any],
+            current_temps: Dict[int, Dict[str, Any]],
+            latest_data: List[Dict[str, Any]],
+            system_messages: List[Dict[str, Any]]
+        )
+    """
     
-    def snapshot():
+    def snapshot() -> Tuple[
+        str,
+        Dict[str, Any],
+        Dict[int, Dict[str, Any]],
+        List[Dict[str, Any]],
+        List[Dict[str, Any]]
+    ]:
         """Collect current data snapshot from Arduino or simulation."""
         arduino_connected = arduino_connected_ref.get('connected', False)
         
@@ -26,7 +55,7 @@ def create_snapshot_function(arduino, arduino_connected_ref):
                 'color': 'green'
             }
             current_temps = arduino.get_current_temperatures()
-            latest_data = arduino.get_latest_sensor_data(count=50)
+            latest_data = arduino.get_latest_sensor_data(count=SNAPSHOT_SIZE)
             system_messages = arduino.get_system_messages(count=10)
             print(f"🔍 실제 데이터 사용: 현재온도={len(current_temps)}개, 최신데이터={len(latest_data)}개")
         else:

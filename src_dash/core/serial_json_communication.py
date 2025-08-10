@@ -10,6 +10,10 @@ import queue
 from datetime import datetime
 from collections import deque
 import logging
+# 데이터 저장소 기본 길이
+SENSOR_DATA_MAXLEN = 1000
+SYSTEM_MESSAGES_MAXLEN = 100
+ALERTS_MAXLEN = 50
 
 
 class ArduinoSerial:
@@ -27,21 +31,17 @@ class ArduinoSerial:
         self.serial_connection = None
         self.is_connected = False
         self.is_running = False
-        
-        # 데이터 저장소
-        self.sensor_data = deque(maxlen=1000)
-        self.system_messages = deque(maxlen=100)
-        self.alerts = deque(maxlen=50)
-        
+        # 데이터 저장소 (최대 길이)
+        self.sensor_data = deque(maxlen=SENSOR_DATA_MAXLEN)
+        self.system_messages = deque(maxlen=SYSTEM_MESSAGES_MAXLEN)
+        self.alerts = deque(maxlen=ALERTS_MAXLEN)
         # 스레드 안전성
         self.data_lock = threading.Lock()
         self.read_thread = None
-        
         # 통계
         self.total_received = 0
         self.last_data_time = None
         self.connection_time = None
-        
         # 로깅
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
@@ -73,9 +73,20 @@ class ArduinoSerial:
             # 연결 안정화
             time.sleep(1)
             
-            # 버퍼 클리어
-            self.serial_connection.flushInput()
-            self.serial_connection.flushOutput()
+            # 버퍼 클리어 (flushInput/flushOutput 는 pySerial 3.x에서 reset_* 로 대체)
+            try:
+                # 새로운 메서드 우선 사용
+                self.serial_connection.reset_input_buffer()
+                self.serial_connection.reset_output_buffer()
+            except AttributeError:
+                # 호환성 fallback (구버전 pySerial)
+                try:
+                    if hasattr(self.serial_connection, 'flushInput'):
+                        self.serial_connection.flushInput()  # type: ignore[attr-defined]
+                    if hasattr(self.serial_connection, 'flushOutput'):
+                        self.serial_connection.flushOutput()  # type: ignore[attr-defined]
+                except Exception:
+                    pass
             
             self.is_connected = True
             self.connection_time = datetime.now()
@@ -83,8 +94,12 @@ class ArduinoSerial:
             
             return True
             
+        except serial.SerialException as e:
+            self.logger.error(f"❌ Arduino 연결 실패 (SerialException): {e}")
+            self.is_connected = False
+            return False
         except Exception as e:
-            self.logger.error(f"❌ Arduino 연결 실패: {e}")
+            self.logger.error(f"❌ Arduino 연결 실패 (예상치 못한 오류): {e}")
             self.is_connected = False
             return False
     
@@ -171,8 +186,11 @@ class ArduinoSerial:
                 # CPU 사용률 조절
                 time.sleep(0.01)
                 
+            except serial.SerialException as e:
+                self.logger.error(f"시리얼 읽기 중 연결 오류: {e}")
+                time.sleep(0.1)
             except Exception as e:
-                self.logger.error(f"읽기 루프 오류: {e}")
+                self.logger.error(f"읽기 루프 예외 발생: {e}")
                 time.sleep(0.1)
         
         self.logger.info("🔄 데이터 읽기 루프 종료")
