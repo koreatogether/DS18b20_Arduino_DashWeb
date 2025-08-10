@@ -112,13 +112,13 @@ CSV/텍스트 모드도 지원하나, 가급적 JSON 사용을 권장합니다.
 ## 개발 / 코드 품질(workflow)
 Python 기반 보조 스크립트(`src_dash/`, `tools/`)는 다음 품질 도구 체인을 사용합니다.
 
-| 도구        | 목적                          | 비고                                            |
-| ----------- | ----------------------------- | ----------------------------------------------- |
-| `ruff`      | Lint (E,F,W) + 빠른 규칙 검사 | flake8 대체, `line-length=110` (pyproject.toml) |
-| `black`     | 포맷터                        | 서식 일관성, 라인 길이 110                      |
-| `isort`     | 임포트 정렬                   | CI 유지 (추후 ruff I 규칙으로 통합 가능)        |
-| `autoflake` | 미사용 import/변수 제거       | 파괴적 변경은 pre-commit/수동 사용 권장         |
-| `pyright`   | 정적 타입 검사                | VS Code(Pylance) 연동                           |
+| 도구                | 목적                         | 비고                                 |
+| ------------------- | ---------------------------- | ------------------------------------ |
+| `ruff`              | Lint (E,F,W,I) + import 정렬 | flake8+isort 대체, `line-length=110` |
+| `black`             | 포맷터                       | 서식 일관성, 라인 길이 110           |
+| `autoflake`         | 미사용 import/변수 제거      | ruff 전에 실행                       |
+| `pyright`           | 정적 타입 검사               | VS Code(Pylance) 연동                |
+| `pytest + coverage` | 테스트/커버리지 측정         | CI 에서 자동 수행                    |
 
 ### 변경 사항 요약
 * `.flake8` 설정 파일 제거 → `pyproject.toml` 중심 구성
@@ -129,16 +129,25 @@ Python 기반 보조 스크립트(`src_dash/`, `tools/`)는 다음 품질 도구
 
 ### 로컬 품질 체크 (선택)
 ```bash
+pytest --cov=src_dash --cov-report=term-missing
 ruff check src_dash src
 black --check src_dash src
-isort --check-only src_dash src
 ```
 
 자동 수정 파이프라인은 `tools/auto_lint_and_format.py` 에서 실행 순서:
-1. autoflake (옵션) → 2. isort → 3. ruff --fix → 4. black → 5. ruff 재검사 → 6. pyright
+1. autoflake → 2. ruff --fix (import sort 포함) → 3. black → 4. ruff 재검사 → 5. pyright
 
 ### CI 반영
-`.github/workflows/ci-lint.yml` 에서 flake8 단계가 제거되고 `Ruff lint` 단계가 추가되었습니다.
+`.github/workflows/ci-lint.yml` 은 통합 스크립트 `python tools/auto_lint_and_format.py` 한 단계로 품질 체인을 실행하고, 결과 로그를 아티팩트 및 GitHub Step Summary 로 제공하며 ruff/pyright 실패 시 CI 를 실패 처리합니다.
+
+개발/CI 의존 패키지는 `requirements-dev.txt` 로 분리되었습니다.
+
+### 테스트 & 커버리지
+CI 는 `pytest --cov` 를 통해 `src_dash` Python 코드 라인 커버리지를 측정하고 `coverage.xml` 을 아티팩트로 업로드합니다. 로컬 재현:
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest --cov=src_dash --cov-report=term-missing
+```
 
 ---
 

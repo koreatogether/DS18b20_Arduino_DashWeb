@@ -317,7 +317,7 @@ class ArduinoSerial:
                 self.logger.info(f"🔍 저장된 센서 주소: {self.sensor_addresses}")
             else:
                 self.logger.info("🔍 센서 주소 정보 없음")
-            
+
             # 최신 데이터부터 역순으로 검사
             for data in reversed(self.sensor_data):
                 sensor_id = data["sensor_id"]
