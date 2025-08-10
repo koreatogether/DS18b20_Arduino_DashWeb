@@ -16,8 +16,9 @@
 
 ### 진행 이력
 - 2025-08-10  (오전) : Deprecated 메서드 교체, sensor_id 캐스팅/타입 경고 정리, snapshot 타입 힌트, 예외 축소, DataFrame 컬럼 사전 검증, threshold_map 제거, UI version Enum(UIMode) 적용, select-all/clear-all 구현 완료. 나머지 안정성(screenshot None guard, read loop 백오프), 구조/로그/DRY, 문서 작업은 미완료 상태로 오후 재개 예정.
-- [ ] 시리얼 미연결 상태 snapshot 안전성 (None guard) 보강
-- [ ] _read_loop 예외 재시도/백오프 로직 추가
+- 2025-08-10  (오후 1차) : snapshot None guard 및 simulation fallback 강화, read loop exponential backoff 도입.
+- [x] 시리얼 미연결 상태 snapshot 안전성 (None guard) 보강
+- [x] _read_loop 예외 재시도/백오프 로직 추가
 - [x] 단위 테스트: combined-graph 빈 선택 시 빈 Figure 반환 케이스 추가
 
 ## 5. 성능/자원
