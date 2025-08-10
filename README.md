@@ -109,6 +109,39 @@ CSV/텍스트 모드도 지원하나, 가급적 JSON 사용을 권장합니다.
 
 ---
 
+## 개발 / 코드 품질(workflow)
+Python 기반 보조 스크립트(`src_dash/`, `tools/`)는 다음 품질 도구 체인을 사용합니다.
+
+| 도구        | 목적                          | 비고                                            |
+| ----------- | ----------------------------- | ----------------------------------------------- |
+| `ruff`      | Lint (E,F,W) + 빠른 규칙 검사 | flake8 대체, `line-length=110` (pyproject.toml) |
+| `black`     | 포맷터                        | 서식 일관성, 라인 길이 110                      |
+| `isort`     | 임포트 정렬                   | CI 유지 (추후 ruff I 규칙으로 통합 가능)        |
+| `autoflake` | 미사용 import/변수 제거       | 파괴적 변경은 pre-commit/수동 사용 권장         |
+| `pyright`   | 정적 타입 검사                | VS Code(Pylance) 연동                           |
+
+### 변경 사항 요약
+* `.flake8` 설정 파일 제거 → `pyproject.toml` 중심 구성
+* CI / Pre-commit 모두 flake8 → ruff 로 전환
+* 최대 라인 길이 110 으로 통일(ruff / black / 편집기)
+* 레거시 스크립트(`tools/legacy/auto_fix_flake8.py`, `tools/legacy/fix_flake8_errors.py`)로 이동 (참고 전용)
+* 과거 flake8 결과 로그는 `logs/quality/legacy_flake8/` 로 보관 (필요 시 이력 비교 용도)
+
+### 로컬 품질 체크 (선택)
+```bash
+ruff check src_dash src
+black --check src_dash src
+isort --check-only src_dash src
+```
+
+자동 수정 파이프라인은 `tools/auto_lint_and_format.py` 에서 실행 순서:
+1. autoflake (옵션) → 2. isort → 3. ruff --fix → 4. black → 5. ruff 재검사 → 6. pyright
+
+### CI 반영
+`.github/workflows/ci-lint.yml` 에서 flake8 단계가 제거되고 `Ruff lint` 단계가 추가되었습니다.
+
+---
+
 ## 라이선스 / 기여
 - 라이선스: TBD (프로젝트 요구에 맞게 지정 예정)
 - 이슈/PR 환영: 재현 가능한 정보와 로그를 포함해 주세요.

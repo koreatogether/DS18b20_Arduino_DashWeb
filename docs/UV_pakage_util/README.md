@@ -57,7 +57,7 @@ UV_full_setup.bat는 아래를 수행합니다:
 1) uv 설치(미설치 시)
 2) Python 가상환경(.venv) 생성 및 활성화
 3) pip 대신 uv로 종속 패키지 설치(requirements.txt + dash_requirements.txt)
-4) 코드 품질(옵션): flake8/pylint 실행 및 로그 저장
+4) 코드 품질(옵션): ruff/pylint 실행 및 로그 저장 (flake8 사용 중단)
 5) Dash 앱 구동 테스트(src_dash/app.py)
 6) PlatformIO 펌웨어 빌드 및(옵션) 업로드
 7) 로그/산출물 경로 안내
@@ -101,7 +101,7 @@ UV_full_setup.bat는 아래를 수행합니다:
 ---
 
 ## 8. 다음 단계(선택)
-- [ ] 린트 정리(불필요 import/공백/라인길이): flake8/pylint 기준 완화 또는 코드 손질
+- [ ] 린트 정리(불필요 import/공백/라인길이): ruff/pylint 기준 또는 코드 손질 (flake8 → ruff 전환)
 - [ ] runner 정책/키워드 구성 외부화(tools 폴더): 운영환경 맞춤
 - [ ] Windows 서비스/스케줄러 등록: 자동 실행
 

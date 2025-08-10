@@ -68,17 +68,17 @@
 8) 필요한 곳만 최소 type: ignore 주석 재검토
 
 ## 11. 추적 상태 템플릿
-| 항목                                | 상태 | PR / 커밋 |
-| ----------------------------------- | ---- | --------- |
-| Night layout 인자 타입              | ✅ DONE | 타입 힌트 이미 적용됨 |
-| PySerial flush/reset 통일           | ✅ DONE | serial_utils.py 이미 구현됨 |
-| setDTR / readline None 가드         | ✅ DONE | hasattr 가드 추가 완료 |
-| realTimeTest unbound ser            | ✅ DONE | hasattr 가드 추가 완료 |
-| image_analyzer mean 타입            | ✅ DONE | np.asarray 캐스팅 추가 |
-| simple_image_analyzer Image unbound | ✅ DONE | None 체크 및 초기화 추가 |
+| 항목                                | 상태   | PR / 커밋                     |
+| ----------------------------------- | ------ | ----------------------------- |
+| Night layout 인자 타입              | ✅ DONE | 타입 힌트 이미 적용됨         |
+| PySerial flush/reset 통일           | ✅ DONE | serial_utils.py 이미 구현됨   |
+| setDTR / readline None 가드         | ✅ DONE | hasattr 가드 추가 완료        |
+| realTimeTest unbound ser            | ✅ DONE | hasattr 가드 추가 완료        |
+| image_analyzer mean 타입            | ✅ DONE | np.asarray 캐스팅 추가        |
+| simple_image_analyzer Image unbound | ✅ DONE | None 체크 및 초기화 추가      |
 | monitor_quality None iterable       | ✅ DONE | process.stdout None 체크 추가 |
-| app.py import fallback 정리         | ✅ DONE | 절대 경로로 수정 |
-| unused expression 제거              | ✅ DONE | 자동 린트로 정리됨 |
+| app.py import fallback 정리         | ✅ DONE | 절대 경로로 수정              |
+| unused expression 제거              | ✅ DONE | 자동 린트로 정리됨            |
 
 ---
 이 문서는 스크린샷 기반 1차 분류이며, 실제 수정 시 추가로 발생하는 새 진단은 아래에 '추가 발견' 섹션으로 누적.
@@ -108,7 +108,7 @@
 
 4. **코드 품질 개선**
    - `src_dash/test_files/test_detailed.py`: 파일 구조 완전 재작성으로 문법 오류 해결
-   - 모든 수정된 파일에서 autoflake, isort, black, flake8 검사 통과
+    - 모든 수정된 파일에서 autoflake, isort, black, ruff 검사 통과 (flake8 단계는 ruff로 대체)
 
 ### 📊 수정 통계
 - **수정된 파일 수**: 8개

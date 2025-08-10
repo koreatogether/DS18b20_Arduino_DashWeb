@@ -160,9 +160,7 @@ class ArduinoSerial:
                 if self.serial_connection.in_waiting > 0:
                     try:
                         # 한 번에 모든 대기 중인 데이터 읽기
-                        data = self.serial_connection.read(
-                            self.serial_connection.in_waiting
-                        )
+                        data = self.serial_connection.read(self.serial_connection.in_waiting)
                         if data:
                             # 문자열로 변환하고 버퍼에 추가
                             text = data.decode("utf-8", errors="ignore")
@@ -184,14 +182,8 @@ class ArduinoSerial:
                 # 5초마다 상태 출력
                 current_time = time.time()
                 if current_time - last_status_time > 5:
-                    waiting = (
-                        self.serial_connection.in_waiting
-                        if self.serial_connection
-                        else 0
-                    )
-                    self.logger.info(
-                        f"📊 상태: 대기바이트={waiting}, 총수신={self.total_received}개"
-                    )
+                    waiting = self.serial_connection.in_waiting if self.serial_connection else 0
+                    self.logger.info(f"📊 상태: 대기바이트={waiting}, 총수신={self.total_received}개")
                     last_status_time = current_time
 
                 # CPU 사용률 조절
@@ -415,10 +407,7 @@ if __name__ == "__main__":
 
                 if current_temps:
                     temp_str = ", ".join(
-                        [
-                            f"ID{k}:{v['temperature']:.1f}°C"
-                            for k, v in current_temps.items()
-                        ]
+                        [f"ID{k}:{v['temperature']:.1f}°C" for k, v in current_temps.items()]
                     )
                     print(f"      온도: {temp_str}")
 

@@ -15,9 +15,7 @@ def list_available_ports():
     available_ports = []
 
     for port in ports:
-        available_ports.append(
-            {"device": port.device, "description": port.description, "hwid": port.hwid}
-        )
+        available_ports.append({"device": port.device, "description": port.description, "hwid": port.hwid})
 
     return available_ports
 

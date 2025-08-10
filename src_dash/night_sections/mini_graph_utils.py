@@ -55,9 +55,7 @@ def add_threshold_lines(fig, th_default, tl_default):
 def create_empty_mini_graph():
     """데이터가 없을 때 빈 미니 그래프를 생성합니다."""
     fig = go.Figure()
-    fig.add_annotation(
-        text="데이터 없음", showarrow=False, font=dict(color="white", size=10)
-    )
+    fig.add_annotation(text="데이터 없음", showarrow=False, font=dict(color="white", size=10))
     fig.update_layout(
         template="plotly_dark",
         margin=dict(l=4, r=10, t=16, b=14),
@@ -76,18 +74,14 @@ def create_sensor_mini_graph(sensor_data, sensor_id, color_seq, th_default, tl_d
     fig = go.Figure()
 
     if sensor_data.empty:
-        fig.add_annotation(
-            text="데이터 없음", showarrow=False, font=dict(color="white", size=10)
-        )
+        fig.add_annotation(text="데이터 없음", showarrow=False, font=dict(color="white", size=10))
     else:
         x = sensor_data["timestamp"]
         y = sensor_data["temperature"]
         color = color_seq[(sensor_id - 1) % len(color_seq)]
 
         # 데이터 라인 추가
-        fig.add_trace(
-            go.Scatter(x=x, y=y, mode="lines", line=dict(color=color, width=2))
-        )
+        fig.add_trace(go.Scatter(x=x, y=y, mode="lines", line=dict(color=color, width=2)))
 
         # Y축 범위 설정
         y_range = calculate_y_axis_range(y, th_default, tl_default)
@@ -108,9 +102,7 @@ def create_sensor_mini_graph(sensor_data, sensor_id, color_seq, th_default, tl_d
         )
 
         # Y축 설정 (숫자 제거)
-        fig.update_yaxes(
-            showgrid=False, tickfont=dict(color="#aaa"), nticks=3, showticklabels=False
-        )
+        fig.update_yaxes(showgrid=False, tickfont=dict(color="#aaa"), nticks=3, showticklabels=False)
 
     # 공통 레이아웃 설정
     fig.update_layout(

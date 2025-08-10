@@ -12,11 +12,7 @@ from .connection_utils import (
     get_port_options_safely,
     safe_disconnect_arduino,
 )
-from .mini_graph_utils import (
-    create_empty_mini_graph,
-    create_sensor_mini_graph,
-    prepare_dataframe,
-)
+from .mini_graph_utils import create_empty_mini_graph, create_sensor_mini_graph, prepare_dataframe
 
 
 def register_night_callbacks(
@@ -52,9 +48,7 @@ def register_night_callbacks(
         except (OSError, AttributeError, ValueError) as e:
             return f"❌ 오류: {str(e)[:20]}..."
 
-    @app.callback(
-        Output("reconnect-btn-v2", "children"), Input("reconnect-btn-v2", "n_clicks")
-    )
+    @app.callback(Output("reconnect-btn-v2", "children"), Input("reconnect-btn-v2", "n_clicks"))
     def reconnect_arduino_v2(n_clicks):
         """Arduino를 재연결합니다."""
         if n_clicks <= 0:
@@ -190,9 +184,7 @@ def register_night_callbacks(
 
         for sid in range(1, 9):
             sensor_data = df[df["sensor_id"] == sid]
-            fig = create_sensor_mini_graph(
-                sensor_data, sid, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT
-            )
+            fig = create_sensor_mini_graph(sensor_data, sid, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT)
             figures.append(fig)
 
             # 디버그 정보 수집
@@ -225,7 +217,8 @@ def register_night_callbacks(
                     df["sensor_id"] = df["sensor_id"].astype(int)
                     sub = df[df["sensor_id"] == sid]
                     if not sub.empty:
-                        latest_temp = sub["temperature"].iloc[-1]
+                        temperature_series = pd.Series(sub["temperature"])
+                        latest_temp = temperature_series.iloc[-1]
                         temp_displays.append(f"{latest_temp:.1f}°C")
                     else:
                         temp_displays.append("--°C")
@@ -336,7 +329,7 @@ def register_night_callbacks(
 
     # 전체 선택/해제 버튼 콜백 (sensor-line-toggle)
     @app.callback(
-        Output("sensor-line-toggle", "value"),
+        Output("sensor-line-toggle", "value", allow_duplicate=True),
         [Input("btn-select-all", "n_clicks"), Input("btn-deselect-all", "n_clicks")],
         [State("sensor-line-toggle", "value")],
         prevent_initial_call=True,

@@ -55,9 +55,7 @@ arduino_connected_ref = {"connected": ARDUINO_CONNECTED}
 _snapshot = create_snapshot_function(arduino, arduino_connected_ref)
 
 # 앱 레이아웃 설정
-app.layout = create_main_layout(
-    INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE, create_layout_v1
-)
+app.layout = create_main_layout(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE, create_layout_v1)
 app.validation_layout = build_validation_layout()
 
 # 간단한 버튼 클릭 테스트 콜백 (비활성화 - 충돌 방지)
@@ -138,36 +136,24 @@ def update_main_layout(n1, n2, current_version):
 
             # create_layout_v2 함수 존재 확인
             try:
-                print(
-                    "🔍 [NIGHT_MODE] night_sections.night_layout에서 create_layout_v2 import 시도..."
-                )
+                print("🔍 [NIGHT_MODE] night_sections.night_layout에서 create_layout_v2 import 시도...")
                 from night_sections.night_layout import create_layout_v2
 
                 print("✅ [NIGHT_MODE] create_layout_v2 함수 import 성공!")
             except ImportError as ie1:
                 print(f"⚠️ [NIGHT_MODE] 첫 번째 import 실패: {ie1}")
                 try:
-                    print(
-                        "🔍 [NIGHT_MODE] night_layout에서 create_layout_v2 import 시도..."
-                    )
-                    from night_layout import create_layout_v2
+                    print("🔍 [NIGHT_MODE] night_layout에서 create_layout_v2 import 시도...")
+                    from .night_sections.night_layout import create_layout_v2
 
-                    print(
-                        "✅ [NIGHT_MODE] create_layout_v2 함수 import 성공 (대체 경로)!"
-                    )
+                    print("✅ [NIGHT_MODE] create_layout_v2 함수 import 성공 (대체 경로)!")
                 except ImportError:
                     print("\n" + "=" * 50)
                     print("🔍 [LAYOUT_CALLBACK] 레이아웃 전환 콜백 호출됨")
-                    print(
-                        f"🔍 [LAYOUT_CALLBACK] btn-ver-1 클릭 수: {n1 if n1 is not None else 0}"
-                    )
-                    print(
-                        f"🔍 [LAYOUT_CALLBACK] btn-ver-2 클릭 수: {n2 if n2 is not None else 0}"
-                    )
+                    print(f"🔍 [LAYOUT_CALLBACK] btn-ver-1 클릭 수: {n1 if n1 is not None else 0}")
+                    print(f"🔍 [LAYOUT_CALLBACK] btn-ver-2 클릭 수: {n2 if n2 is not None else 0}")
                     print(f"🔍 [LAYOUT_CALLBACK] 현재 버전: {current_version}")
-                layout_v1 = create_layout_v1(
-                    INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE
-                )
+                layout_v1 = create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE)
                 return layout_v1, UIMode.DAY.value
 
             # 현재 포트 옵션을 실시간으로 가져오기
@@ -176,9 +162,7 @@ def update_main_layout(n1, n2, current_version):
                 from core.arduino_manager import get_current_port_options
 
                 current_port_options, current_default = get_current_port_options()
-                print(
-                    f"✅ [NIGHT_MODE] 포트 옵션: {len(current_port_options)}개, 기본값: {current_default}"
-                )
+                print(f"✅ [NIGHT_MODE] 포트 옵션: {len(current_port_options)}개, 기본값: {current_default}")
             except Exception as pe:
                 print(f"⚠️ [NIGHT_MODE] 포트 옵션 가져오기 실패: {pe}")
                 current_port_options, current_default = (
@@ -216,9 +200,7 @@ def update_main_layout(n1, n2, current_version):
 
                 traceback.print_exc()
                 # 레이아웃 생성 실패 시 Day 모드로 fallback
-                layout_v1 = create_layout_v1(
-                    INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE
-                )
+                layout_v1 = create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE)
                 return (
                     layout_v1,
                     UIMode.DAY.value,
@@ -235,9 +217,7 @@ def update_main_layout(n1, n2, current_version):
                 print("☀️ [DAY_MODE] 기본 v1 레이아웃 로드")
 
             print("☀️ [DAY_MODE] v1 레이아웃 생성 중...")
-            layout_v1 = create_layout_v1(
-                INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE
-            )
+            layout_v1 = create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE)
             print("✅ [DAY_MODE] v1 레이아웃 생성 완료!")
             print(f"{'='*50}\n")
             if button_id == "btn-ver-1" and n1 and n1 > 0:
@@ -299,9 +279,7 @@ def update_main_layout(n1, n2, current_version):
 
 # 콜백 등록
 register_shared_callbacks(app, _snapshot, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT)
-register_day_callbacks(
-    app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT, _snapshot
-)
+register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT, _snapshot)
 
 # Night 콜백도 앱 시작 시 미리 등록
 try:
@@ -329,9 +307,7 @@ post_registration_audit(app)
 if __name__ == "__main__":
     try:
         print_startup_info(ARDUINO_CONNECTED)
-        app.run(
-            debug=True, host="127.0.0.1", port=8050, use_reloader=False, threaded=True
-        )
+        app.run(debug=True, host="127.0.0.1", port=8050, use_reloader=False, threaded=True)
     except KeyboardInterrupt:
         print("\n🛑 사용자가 애플리케이션을 종료했습니다")
     except SystemExit:

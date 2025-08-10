@@ -50,12 +50,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
             icon = level_icons.get(msg["level"], "📝")
             log_entries.append(html.Div(f"[{ts}] {icon} {msg['message']}"))
 
-        return (
-            [connection_status, connection_style]
-            + sensor_temps
-            + sensor_statuses
-            + [log_entries]
-        )
+        return [connection_status, connection_style] + sensor_temps + sensor_statuses + [log_entries]
 
     @app.callback(
         [Output("temp-graph", "figure"), Output("detail-sensor-graph", "figure")],
@@ -178,9 +173,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                     )
             else:
                 detail_fig = go.Figure()
-                detail_fig.update_layout(
-                    title="상세 데이터 (형식 오류)", template="plotly_white"
-                )
+                detail_fig.update_layout(title="상세 데이터 (형식 오류)", template="plotly_white")
         else:
             detail_fig = go.Figure()
             detail_fig.update_layout(title="상세 데이터 없음", template="plotly_white")
@@ -244,9 +237,7 @@ def register_shared_callbacks(app, snapshot_func, COLOR_SEQ, TH_DEFAULT, TL_DEFA
                 for sid, g in df.groupby("sensor_id"):
                     if sid in selected_ids:
                         trace_color = (
-                            COLOR_SEQ[(sid - 1) % len(COLOR_SEQ)]
-                            if isinstance(sid, int)
-                            else "#888"
+                            COLOR_SEQ[(sid - 1) % len(COLOR_SEQ)] if isinstance(sid, int) else "#888"
                         )
                         fig.add_trace(
                             go.Scatter(

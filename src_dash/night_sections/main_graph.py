@@ -46,10 +46,7 @@ def create_combined_graph_section():
                             # 기능 안정화를 위해 순수 문자열 라벨 체크리스트로 복구
                             dcc.Checklist(
                                 id="sensor-line-toggle",
-                                options=[
-                                    {"label": f"센서 {i}", "value": i}
-                                    for i in range(1, 9)
-                                ],
+                                options=[{"label": f"센서 {i}", "value": i} for i in range(1, 9)],
                                 value=[i for i in range(1, 9)],
                                 labelStyle={
                                     "display": "block",

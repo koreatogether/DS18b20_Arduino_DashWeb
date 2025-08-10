@@ -17,8 +17,8 @@ def test_arduino_connection():
         time.sleep(2)
 
         # 버퍼 클리어
-        ser.flushInput()
-        ser.flushOutput()
+        ser.reset_input_buffer()
+        ser.reset_output_buffer()
 
         print("📡 Arduino에서 데이터 수신 대기 중...")
 

@@ -5,9 +5,7 @@ from dash import dcc, html
 from .ui_modes import UIMode
 
 
-def create_main_layout(
-    initial_port_options, selected_port, initial_port_value, create_layout_v1
-):
+def create_main_layout(initial_port_options, selected_port, initial_port_value, create_layout_v1):
     """메인 앱 레이아웃을 생성합니다."""
     print("🔍 [LAYOUT] 메인 레이아웃 생성 시작")
     print("🔍 [LAYOUT] 버튼 생성 중...")
@@ -98,9 +96,7 @@ def create_main_layout(
             dcc.Store(id="ui-version-store", data=UIMode.DAY.value),
             html.Div(
                 id="main-content",
-                children=create_layout_v1(
-                    initial_port_options, selected_port, initial_port_value
-                ),
+                children=create_layout_v1(initial_port_options, selected_port, initial_port_value),
             ),
             # Common components that should always be present
             dcc.Interval(id="interval-component", interval=1000, n_intervals=0),

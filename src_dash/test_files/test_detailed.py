@@ -95,8 +95,7 @@ def test_specific_commands():
 
             # 응답 분석
             expected_found = any(
-                any(expect in response for response in responses)
-                for expect in test["expect"]
+                any(expect in response for response in responses) for expect in test["expect"]
             )
 
             results[test["cmd"]] = {
@@ -183,9 +182,7 @@ def test_json_communication():
 
         ser.close()
 
-        print(
-            f"\n📊 JSON 결과: {len(json_messages)}개 JSON 메시지, 총 {len(all_messages)}개 메시지"
-        )
+        print(f"\n📊 JSON 결과: {len(json_messages)}개 JSON 메시지, 총 {len(all_messages)}개 메시지")
 
         if json_messages:
             print("✅ JSON 통신 정상 작동")
@@ -205,9 +202,7 @@ def test_json_communication():
             print("⚠️ JSON 메시지를 받지 못했습니다")
             if len(all_messages) > 0:
                 print(f"  📝 하지만 총 {len(all_messages)}개의 다른 메시지는 수신됨")
-                print(
-                    f"  💡 샘플 메시지: {all_messages[0] if all_messages else 'None'}"
-                )
+                print(f"  💡 샘플 메시지: {all_messages[0] if all_messages else 'None'}")
             else:
                 print("  ❌ 어떤 메시지도 수신되지 않음")
 
@@ -233,9 +228,7 @@ def main():
     print("🏆 최종 테스트 결과:")
 
     if cmd_results:
-        cmd_success_rate = sum(1 for r in cmd_results.values() if r["success"]) / len(
-            cmd_results
-        )
+        cmd_success_rate = sum(1 for r in cmd_results.values() if r["success"]) / len(cmd_results)
         print(f"📤 명령 응답: {cmd_success_rate:.1%} 성공률")
     else:
         print("📤 명령 응답: 테스트 실패")

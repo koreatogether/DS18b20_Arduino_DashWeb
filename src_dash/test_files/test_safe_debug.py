@@ -94,10 +94,7 @@ def safe_debug_arduino():
 
                 # 현재 온도 출력
                 if current_temps:
-                    temp_list = [
-                        f"ID{k}:{v['temperature']:.1f}°C"
-                        for k, v in current_temps.items()
-                    ]
+                    temp_list = [f"ID{k}:{v['temperature']:.1f}°C" for k, v in current_temps.items()]
                     print(f"   🌡️ 현재: {', '.join(temp_list)}")
 
             time.sleep(1)  # 1초 대기

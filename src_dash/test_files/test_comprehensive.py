@@ -29,8 +29,8 @@ def test_serial_communication(port_name, duration=10):
 
         # 연결 안정화
         time.sleep(2)
-        ser.flushInput()
-        ser.flushOutput()
+        ser.reset_input_buffer()
+        ser.reset_output_buffer()
 
         print(f"📊 {duration}초간 데이터 수신 테스트...")
 
@@ -47,9 +47,7 @@ def test_serial_communication(port_name, duration=10):
             current_time = time.time()
 
             # 2초마다 명령 전송
-            if current_time - last_command_time > 2 and command_index < len(
-                test_commands
-            ):
+            if current_time - last_command_time > 2 and command_index < len(test_commands):
                 cmd = test_commands[command_index]
                 print(f"📤 명령 전송: {cmd}")
                 ser.write((cmd + "\n").encode("utf-8"))
@@ -65,10 +63,7 @@ def test_serial_communication(port_name, duration=10):
                         received_data.append(line)
 
                         # 명령 응답 체크
-                        if any(
-                            keyword in line
-                            for keyword in ["PONG", "ACK", "SYSTEM", "STATUS"]
-                        ):
+                        if any(keyword in line for keyword in ["PONG", "ACK", "SYSTEM", "STATUS"]):
                             command_responses.append(line)
 
                 except Exception as e:
@@ -86,12 +81,8 @@ def test_serial_communication(port_name, duration=10):
         print(f"  📤 명령 응답: {len(command_responses)}개")
 
         # 데이터 유형 분석
-        sensor_data_count = sum(
-            1 for data in received_data if "TEMP" in data or "SENSOR" in data
-        )
-        system_messages = sum(
-            1 for data in received_data if "SYSTEM" in data or "TEST" in data
-        )
+        sensor_data_count = sum(1 for data in received_data if "TEMP" in data or "SENSOR" in data)
+        system_messages = sum(1 for data in received_data if "SYSTEM" in data or "TEST" in data)
 
         print(f"  🌡️ 센서 데이터: {sensor_data_count}개")
         print(f"  🔧 시스템 메시지: {system_messages}개")

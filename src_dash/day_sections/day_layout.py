@@ -72,9 +72,7 @@ def create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE):
                                 children=[
                                     html.Div(
                                         [
-                                            html.H4(
-                                                f"센서 {i}", style={"margin": "5px"}
-                                            ),
+                                            html.H4(f"센서 {i}", style={"margin": "5px"}),
                                             html.Div(
                                                 id=f"sensor-{i}-temp",
                                                 children="--°C",
@@ -136,10 +134,7 @@ def create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE):
                                                                     }
                                                                     for i in range(1, 9)
                                                                 ],
-                                                                value=[
-                                                                    i
-                                                                    for i in range(1, 9)
-                                                                ],
+                                                                value=[i for i in range(1, 9)],
                                                                 labelStyle={
                                                                     "display": "block",
                                                                     "margin": "2px 0",
@@ -211,10 +206,7 @@ def create_layout_v1(INITIAL_PORT_OPTIONS, selected_port, INITIAL_PORT_VALUE):
                                     html.Label("상세 그래프 센서 선택"),
                                     dcc.Dropdown(
                                         id="detail-sensor-dropdown",
-                                        options=[
-                                            {"label": f"센서 {i}", "value": i}
-                                            for i in range(1, 65)
-                                        ],
+                                        options=[{"label": f"센서 {i}", "value": i} for i in range(1, 65)],
                                         value=1,
                                         clearable=False,
                                         style={"width": "200px"},

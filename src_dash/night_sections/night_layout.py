@@ -26,7 +26,7 @@ def create_layout_v2(
     try:
         # 1. 센서 온도 섹션 (개별 온도 창 8개) + 센서 기능 버튼 섹션 + 개별 도구 섹션
         print("🔍 [NIGHT_LAYOUT] 센서 카드 생성 중...")
-        sensor_cards = create_sensor_cards_with_buttons(th_default, tl_default)
+        sensor_cards = create_sensor_cards_with_buttons(float(th_default or 55.0), float(tl_default or -25.0))
         print(f"✅ [NIGHT_LAYOUT] 센서 카드 {len(sensor_cards)}개 생성 완료")
 
         # 2. 모달 섹션 (측정 주기 선택 모달)
@@ -42,9 +42,7 @@ def create_layout_v2(
 
         # 4. 제어&로그 섹션
         print("🔍 [NIGHT_LAYOUT] 제어&로그 섹션 생성 중...")
-        control_panel_v2 = create_control_log_section(
-            initial_port_options, selected_port, initial_port_value
-        )
+        control_panel_v2 = create_control_log_section(initial_port_options, selected_port, initial_port_value)
         print("✅ [NIGHT_LAYOUT] 제어&로그 섹션 생성 완료")
 
     except Exception as e:

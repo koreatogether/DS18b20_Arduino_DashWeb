@@ -6,9 +6,7 @@ import dash
 from dash import Input, Output, State
 
 
-def register_day_callbacks(
-    app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT, _snapshot
-):
+def register_day_callbacks(app, arduino, arduino_connected_ref, COLOR_SEQ, TH_DEFAULT, TL_DEFAULT, _snapshot):
     """Day mode 관련 콜백들을 등록"""
 
     @app.callback(
@@ -29,9 +27,7 @@ def register_day_callbacks(
             return []
         return current
 
-    @app.callback(
-        Output("reconnect-btn", "children"), [Input("reconnect-btn", "n_clicks")]
-    )
+    @app.callback(Output("reconnect-btn", "children"), [Input("reconnect-btn", "n_clicks")])
     def reconnect_arduino(n_clicks):
         if n_clicks > 0:
             print("🔄 Day 모드 수동 재연결 시도...")
@@ -56,9 +52,7 @@ def register_day_callbacks(
                 return f"❌ 오류: {str(e)[:15]}..."
         return "Arduino 재연결"
 
-    @app.callback(
-        Output("json-toggle-btn", "children"), [Input("json-toggle-btn", "n_clicks")]
-    )
+    @app.callback(Output("json-toggle-btn", "children"), [Input("json-toggle-btn", "n_clicks")])
     def toggle_json_mode(n_clicks):
         if n_clicks > 0 and arduino.is_healthy():
             command = {"type": "config", "action": "toggle_json_mode"}
@@ -101,9 +95,7 @@ def register_day_callbacks(
                 if ports:
                     default_val = ports[0].device
             if not options:
-                options = [
-                    {"label": f"COM{i}", "value": f"COM{i}"} for i in range(1, 11)
-                ]
+                options = [{"label": f"COM{i}", "value": f"COM{i}"} for i in range(1, 11)]
                 default_val = "COM4"
 
             values_set = {o["value"] for o in options}
@@ -153,9 +145,7 @@ def register_day_callbacks(
         State("threshold-store", "data"),
         prevent_initial_call=True,
     )
-    def handle_quick_commands(
-        n1, n2, n3, old_id, new_id, target_id, tl, th, interval_ms, threshold_map
-    ):
+    def handle_quick_commands(n1, n2, n3, old_id, new_id, target_id, tl, th, interval_ms, threshold_map):
         result = {"ok": False, "message": "no-op"}
         if not arduino.is_healthy():
             return ({"ok": False, "message": "Arduino 미연결"}, threshold_map)

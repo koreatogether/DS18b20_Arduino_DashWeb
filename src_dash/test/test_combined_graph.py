@@ -19,7 +19,6 @@ def snapshot_stub(*args, **kwargs):
 def get_combined_callback(app, *args):
     # Find the combined_graph callback function
     for cb in app.callback_map.values():
-        cb.get("outputs") or cb.get("output") or cb.get("outputs_list")
         # outputs field may differ; inspect keys instead
         if "combined-graph.figure" in cb["state"][0]["id"] if "state" in cb else False:
             continue

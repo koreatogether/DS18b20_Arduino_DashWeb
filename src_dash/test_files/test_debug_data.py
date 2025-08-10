@@ -57,9 +57,7 @@ def debug_arduino_data():
 
         # 현재 온도 출력
         if current_temps:
-            temp_str = ", ".join(
-                [f"ID{k}:{v['temperature']:.1f}°C" for k, v in current_temps.items()]
-            )
+            temp_str = ", ".join([f"ID{k}:{v['temperature']:.1f}°C" for k, v in current_temps.items()])
             print(f"      현재온도: {temp_str}")
 
     # 최종 결과
@@ -74,9 +72,7 @@ def debug_arduino_data():
     if final_temps:
         print("   센서별 현재 온도:")
         for sensor_id, info in final_temps.items():
-            print(
-                f"     센서 {sensor_id}: {info['temperature']:.1f}°C ({info['status']})"
-            )
+            print(f"     센서 {sensor_id}: {info['temperature']:.1f}°C ({info['status']})")
     else:
         print("   ⚠️ 현재 온도 데이터 없음")
 

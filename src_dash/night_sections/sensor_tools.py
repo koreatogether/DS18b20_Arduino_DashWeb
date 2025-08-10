@@ -59,9 +59,7 @@ def create_expanded_individual_tools():
             [
                 html.Div(
                     [
-                        html.Span(
-                            "⚙️", style={"fontSize": "24px", "marginBottom": "10px"}
-                        ),
+                        html.Span("⚙️", style={"fontSize": "24px", "marginBottom": "10px"}),
                         html.Div(
                             [
                                 html.Button(
