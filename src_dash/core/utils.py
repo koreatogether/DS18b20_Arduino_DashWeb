@@ -1,16 +1,17 @@
 """유틸리티 함수들"""
-import sys
+
 import os
+import sys
 
 
 def configure_console_encoding():
     """콘솔 인코딩을 설정합니다."""
     try:
-        os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
-        if hasattr(sys.stdout, 'reconfigure'):
-            sys.stdout.reconfigure(encoding='utf-8', errors='replace')  # type: ignore[attr-defined]
-        if hasattr(sys.stderr, 'reconfigure'):
-            sys.stderr.reconfigure(encoding='utf-8', errors='replace')  # type: ignore[attr-defined]
+        os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
     except (AttributeError, OSError):
         pass
 

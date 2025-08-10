@@ -1,4 +1,5 @@
 """연결 관련 유틸리티 함수들"""
+
 import time
 
 
@@ -35,19 +36,19 @@ def get_port_options_safely():
         from serial.tools import list_ports
     except ImportError:
         return None, None
-        
+
     try:
         ports = list(list_ports.comports())
         options = []
         default_val = None
-        
+
         for p in ports:
             label = f"{p.device} - {p.description}"
-            options.append({'label': label, 'value': p.device})
-            
+            options.append({"label": label, "value": p.device})
+
         if ports:
             default_val = ports[0].device
-            
+
         return options, default_val
     except (OSError, AttributeError):
         return None, None
@@ -55,5 +56,5 @@ def get_port_options_safely():
 
 def create_fallback_port_options():
     """기본 포트 옵션을 생성합니다."""
-    options = [{'label': f'COM{i}', 'value': f'COM{i}'} for i in range(1, 11)]
-    return options, 'COM4'
+    options = [{"label": f"COM{i}", "value": f"COM{i}"} for i in range(1, 11)]
+    return options, "COM4"
