@@ -8,6 +8,18 @@ const float SensorManager::MAX_TEMP_CHANGE = 10.0;
 SensorManager::SensorManager(OneWire *ow, DallasTemperature *ds, SerialCommunication *comm)
     : oneWire(ow), sensors(ds), serialComm(comm), sensorCount(0)
 {
+    // sensorList 배열 초기화
+    for (int i = 0; i < MAX_SENSORS; i++) {
+        sensorList[i].id = 0;
+        sensorList[i].isConnected = false;
+        sensorList[i].lastTemperature = 0.0;
+        sensorList[i].lastReadTime = 0;
+        sensorList[i].errorCount = 0;
+        sensorList[i].hasValidReading = false;
+        sensorList[i].measurementInterval = DEFAULT_MEASUREMENT_INTERVAL;
+        sensorList[i].nextMeasurementTime = 0;
+        memset(sensorList[i].address, 0, 8);
+    }
 }
 
 void SensorManager::initialize()
@@ -249,11 +261,20 @@ bool SensorManager::getSensorInfoByIndex(int index, char *output, int maxSize) c
 
     if (sensorList[index].hasValidReading)
     {
-        dtostrf(sensorList[index].lastTemperature, 4, 2, tempStr);
+        // 버퍼 크기를 고려한 안전한 변환
+        snprintf(tempStr, sizeof(tempStr), "%.2f", sensorList[index].lastTemperature);
     }
     else
     {
-        strcpy(tempStr, "NO_DATA");
+        // Safe bounded copy (replaces strcpy)
+        const char* noDataStr = "NO_DATA";
+        size_t copyLen = min(strlen(noDataStr), sizeof(tempStr) - 1);
+        if (copyLen > 0) {
+            memcpy(tempStr, noDataStr, copyLen);
+            tempStr[copyLen] = '\0';
+        } else {
+            tempStr[0] = '\0';
+        }
     }
 
     int result = snprintf(output, maxSize, "SENSOR_INFO_%d_%s_%s_ERRORS_%d_LAST_%s",
@@ -300,7 +321,8 @@ void SensorManager::addressToString(const uint8_t *address, char *buffer) const
     {
         if (address[i] < 16)
             *ptr++ = '0';
-        sprintf(ptr, "%X", address[i]);
+        // Use snprintf for bounds safety instead of sprintf
+        snprintf(ptr, 24 - (ptr - buffer), "%X", address[i]);
         ptr += strlen(ptr);
         if (i < 7)
             *ptr++ = ':';

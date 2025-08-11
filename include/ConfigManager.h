@@ -9,6 +9,15 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
+// 버퍼 크기 상수 정의
+#define DEVICE_NAME_SIZE 32
+#define FIRMWARE_VERSION_SIZE 16
+#define WIFI_SSID_SIZE 32
+#define WIFI_PASSWORD_SIZE 64
+#define SERVER_URL_SIZE 128
+#define API_KEY_SIZE 64
+#define MAX_SENSORS 8
+
 class ConfigManager
 {
 public:
@@ -20,14 +29,14 @@ public:
         uint16_t config_size = sizeof(SystemConfig);
 
         // 시스템 설정
-        char device_name[32] = "DS18B20_Monitor";
-        char firmware_version[16] = "1.0.0";
+        char device_name[DEVICE_NAME_SIZE];
+        char firmware_version[FIRMWARE_VERSION_SIZE];
         uint32_t device_serial = 0;
 
         // 네트워크 설정
-        char wifi_ssid[32] = "";
-        char wifi_password[64] = "";
-        char server_url[128] = "";
+        char wifi_ssid[WIFI_SSID_SIZE];
+        char wifi_password[WIFI_PASSWORD_SIZE];
+        char server_url[SERVER_URL_SIZE];
         uint16_t server_port = 443;
         bool wifi_enabled = false;
 
@@ -45,7 +54,7 @@ public:
         bool json_mode_enabled = true;
 
         // 보안 설정
-        char api_key[64] = "";
+        char api_key[API_KEY_SIZE];
         bool encryption_enabled = false;
         uint32_t session_timeout_ms = 3600000; // 1시간
 
@@ -72,7 +81,19 @@ private:
     static const uint16_t EEPROM_SIZE = 4096; // 4KB EEPROM
 
 public:
-    ConfigManager();
+    ConfigManager() {
+        // 안전한 문자열 초기화
+        strncpy(config.device_name, "DS18B20_Monitor", DEVICE_NAME_SIZE - 1);
+        config.device_name[DEVICE_NAME_SIZE - 1] = '\0';
+        
+        strncpy(config.firmware_version, "1.0.0", FIRMWARE_VERSION_SIZE - 1);
+        config.firmware_version[FIRMWARE_VERSION_SIZE - 1] = '\0';
+        
+        memset(config.wifi_ssid, 0, WIFI_SSID_SIZE);
+        memset(config.wifi_password, 0, WIFI_PASSWORD_SIZE);
+        memset(config.server_url, 0, SERVER_URL_SIZE);
+        memset(config.api_key, 0, API_KEY_SIZE);
+    }
 
     // 설정 로드/저장
     bool loadConfig();

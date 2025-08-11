@@ -39,7 +39,7 @@ private:
 
 public:
     CommandProcessor(SerialCommunication *comm, ISensorManager *sensorMgr, SystemState *state);
-    ~CommandProcessor() = default;
+    ~CommandProcessor() override = default;
 
     // ICommandProcessor 인터페이스 구현
     void processIncomingCommands() override;

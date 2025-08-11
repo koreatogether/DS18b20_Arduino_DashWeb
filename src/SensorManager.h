@@ -59,7 +59,7 @@ private:
 
 public:
     SensorManager(OneWire *ow, DallasTemperature *ds, SerialCommunication *comm);
-    ~SensorManager() = default;
+    ~SensorManager() override = default;
 
     // ISensorManager 인터페이스 구현
     void initialize() override;
